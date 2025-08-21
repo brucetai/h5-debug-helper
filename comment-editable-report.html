@@ -575,10 +575,22 @@
             bubble.innerHTML = `
                 <textarea placeholder="添加評論..."></textarea>
                 <div class="comment-actions">
-                    <button class="save-btn" onclick="saveComment(this)">保存</button>
-                    <button class="cancel-btn" onclick="cancelComment(this)">取消</button>
+                    <button class="save-btn">保存</button>
+                    <button class="cancel-btn">取消</button>
                 </div>
             `;
+            
+            // 添加事件監聽器
+            const saveBtn = bubble.querySelector('.save-btn');
+            const cancelBtn = bubble.querySelector('.cancel-btn');
+            
+            saveBtn.addEventListener('click', function() {
+                saveComment(this);
+            });
+            
+            cancelBtn.addEventListener('click', function() {
+                cancelComment(this);
+            });
             
             // 定位氣泡
             const rect = element.getBoundingClientRect();
@@ -604,10 +616,17 @@
         
         // 保存評論
         function saveComment(button) {
+            console.log('saveComment called', button);
+            
             const bubble = button.closest('.comment-bubble');
             const textarea = bubble.querySelector('textarea');
             const element = bubble.dataset.element;
             const commentKey = getCommentKey(element);
+            
+            console.log('Bubble:', bubble);
+            console.log('Textarea:', textarea);
+            console.log('Element:', element);
+            console.log('Comment key:', commentKey);
             
             if (textarea.value.trim()) {
                 commentData[commentKey] = {
@@ -647,12 +666,24 @@
                 <div class="comment-header">
                     <span class="comment-time">${comment.time}</span>
                     <div class="comment-actions">
-                        <span class="comment-edit" onclick="editComment(this)">編輯</span>
-                        <span class="comment-delete" onclick="deleteComment(this)">刪除</span>
+                        <span class="comment-edit">編輯</span>
+                        <span class="comment-delete">刪除</span>
                     </div>
                 </div>
                 <div class="comment-text">${comment.text}</div>
             `;
+            
+            // 添加事件監聽器
+            const editBtn = display.querySelector('.comment-edit');
+            const deleteBtn = display.querySelector('.comment-delete');
+            
+            editBtn.addEventListener('click', function() {
+                editComment(this);
+            });
+            
+            deleteBtn.addEventListener('click', function() {
+                deleteComment(this);
+            });
             
             // 插入到元素後面
             element.parentNode.insertBefore(display, element.nextSibling);
@@ -691,11 +722,29 @@
         
         // 獲取評論鍵值
         function getCommentKey(element) {
-            const eventName = element.closest('tr')?.dataset.event || 'header';
-            const elementType = element.closest('td') ? 'event' : 
-                               element.closest('.rule-text') ? 'rule' : 'header';
-            const elementIndex = Array.from(element.parentNode.children).indexOf(element);
-            return `${eventName}_${elementType}_${elementIndex}`;
+            console.log('getCommentKey called with element:', element);
+            
+            // 找到最近的tr元素
+            const tr = element.closest('tr');
+            const eventName = tr ? tr.dataset.event : 'header';
+            
+            // 判斷元素類型
+            let elementType = 'header';
+            if (element.closest('td')) {
+                elementType = 'event';
+            } else if (element.closest('.rule-text')) {
+                elementType = 'rule';
+            }
+            
+            // 獲取元素在同級中的索引
+            const parent = element.parentNode;
+            const siblings = Array.from(parent.children);
+            const elementIndex = siblings.indexOf(element);
+            
+            const key = `${eventName}_${elementType}_${elementIndex}`;
+            console.log('Generated key:', key);
+            
+            return key;
         }
         
         // 切換事件狀態
