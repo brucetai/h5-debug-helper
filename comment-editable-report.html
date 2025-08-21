@@ -241,11 +241,33 @@
             margin-left: 8px;
             opacity: 0.6;
             transition: all 0.2s ease;
+            position: relative;
         }
         
         .comment-icon:hover {
             opacity: 1;
             transform: scale(1.1);
+        }
+        
+        .comment-icon.has-comment {
+            opacity: 1;
+            color: #2196f3;
+        }
+        
+        .comment-icon.has-comment::after {
+            content: "●";
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            font-size: 8px;
+            color: #f44336;
+            background: white;
+            border-radius: 50%;
+            width: 8px;
+            height: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
         .comment-bubble {
@@ -302,13 +324,14 @@
         }
         
         .comment-display {
-            background: #f8f9fa;
-            border: 1px solid #e9ecef;
-            border-radius: 4px;
-            padding: 8px;
+            background: #e3f2fd;
+            border: 1px solid #2196f3;
+            border-radius: 6px;
+            padding: 12px;
             margin-top: 8px;
             font-size: 13px;
-            color: #495057;
+            color: #1976d2;
+            box-shadow: 0 2px 4px rgba(33, 150, 243, 0.1);
         }
         
         .comment-display .comment-header {
@@ -323,10 +346,34 @@
             color: #6c757d;
         }
         
-        .comment-display .comment-edit {
+        .comment-display .comment-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .comment-display .comment-edit,
+        .comment-display .comment-delete {
             font-size: 11px;
-            color: #007bff;
             cursor: pointer;
+            padding: 2px 6px;
+            border-radius: 3px;
+            transition: all 0.2s ease;
+        }
+        
+        .comment-display .comment-edit {
+            color: #007bff;
+        }
+        
+        .comment-display .comment-edit:hover {
+            background: #e3f2fd;
+        }
+        
+        .comment-display .comment-delete {
+            color: #dc3545;
+        }
+        
+        .comment-display .comment-delete:hover {
+            background: #f8d7da;
         }
         
         .edit-hint {
@@ -374,7 +421,7 @@
         <!-- 編輯提示 -->
         <div class="edit-hint">
             <strong>💬 Comment編輯提示：</strong>
-            點擊 💬 圖標添加評論，點擊狀態可切換，點擊截圖區域可上傳。所有評論會自動保存。
+            點擊 💬 圖標添加評論，評論會顯示在下方。藍色圖標表示有評論，紅色點表示新評論。點擊狀態可切換，點擊截圖區域可上傳。所有評論會自動保存。
         </div>
         
         <!-- 標題區域 -->
@@ -597,13 +644,19 @@
             display.innerHTML = `
                 <div class="comment-header">
                     <span class="comment-time">${comment.time}</span>
-                    <span class="comment-edit" onclick="editComment(this)">編輯</span>
+                    <div class="comment-actions">
+                        <span class="comment-edit" onclick="editComment(this)">編輯</span>
+                        <span class="comment-delete" onclick="deleteComment(this)">刪除</span>
+                    </div>
                 </div>
                 <div class="comment-text">${comment.text}</div>
             `;
             
             // 插入到元素後面
             element.parentNode.insertBefore(display, element.nextSibling);
+            
+            // 標記圖標為有評論
+            element.classList.add('has-comment');
         }
         
         // 編輯評論
@@ -611,6 +664,27 @@
             const display = editElement.closest('.comment-display');
             const element = display.previousElementSibling;
             addComment(element);
+        }
+        
+        // 刪除評論
+        function deleteComment(deleteElement) {
+            if (confirm('確定要刪除這個評論嗎？')) {
+                const display = deleteElement.closest('.comment-display');
+                const element = display.previousElementSibling;
+                const commentKey = getCommentKey(element);
+                
+                // 刪除評論數據
+                delete commentData[commentKey];
+                saveCommentData();
+                
+                // 移除評論顯示
+                display.remove();
+                
+                // 移除圖標標記
+                element.classList.remove('has-comment');
+                
+                showSuccessMessage('評論已刪除');
+            }
         }
         
         // 獲取評論鍵值
@@ -705,10 +779,17 @@
             if (savedData) {
                 try {
                     commentData = JSON.parse(savedData);
-                    // 顯示所有評論
+                    // 顯示所有已保存的評論
                     Object.keys(commentData).forEach(key => {
-                        const [eventName, elementType, elementIndex] = key.split('_');
-                        // 這裡可以根據需要恢復評論顯示
+                        const comment = commentData[key];
+                        // 根據key找到對應的元素並顯示評論
+                        const elements = document.querySelectorAll('.comment-icon');
+                        elements.forEach((element, index) => {
+                            const elementKey = getCommentKey(element);
+                            if (elementKey === key) {
+                                showComment(element, comment);
+                            }
+                        });
                     });
                 } catch (e) {
                     console.log('載入評論數據失敗');
