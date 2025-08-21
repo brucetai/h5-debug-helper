@@ -426,12 +426,12 @@
         
         <!-- 標題區域 -->
         <div class="header">
-            <h1>H5 遊戲事件追踪報告 <span class="comment-icon" onclick="addComment(this)">💬</span></h1>
+            <h1>H5 遊戲事件追踪報告 <span class="comment-icon">💬</span></h1>
             <div class="game-url">
                 <div class="url-label">游戏URL:</div>
-                <div class="url-value">https://h5.stg.g123.jp/game/kumo <span class="comment-icon" onclick="addComment(this)">💬</span></div>
+                <div class="url-value">https://h5.stg.g123.jp/game/kumo <span class="comment-icon">💬</span></div>
             </div>
-            <div class="generation-time">生成时间: 2025/8/21 10:12:20 <span class="comment-icon" onclick="addComment(this)">💬</span></div>
+            <div class="generation-time">生成时间: 2025/8/21 10:12:20 <span class="comment-icon">💬</span></div>
         </div>
         
         <!-- 事件追踪表格 -->
@@ -561,6 +561,8 @@
         
         // 添加評論
         function addComment(element) {
+            console.log('addComment called', element);
+            
             // 移除現有的評論氣泡
             const existingBubble = document.querySelector('.comment-bubble');
             if (existingBubble) {
@@ -809,8 +811,23 @@
         
         // 頁面載入完成
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, loading comment data...');
             loadCommentData();
             console.log('Comment編輯報告已加載完成！');
+            
+            // 測試函數是否可用
+            console.log('addComment function available:', typeof addComment);
+            
+            // 為所有評論圖標添加點擊事件監聽器
+            document.querySelectorAll('.comment-icon').forEach(icon => {
+                console.log('Adding click listener to icon:', icon);
+                icon.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('Icon clicked:', this);
+                    addComment(this);
+                });
+            });
         });
     </script>
 </body>
