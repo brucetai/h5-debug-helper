@@ -618,7 +618,7 @@
                 <div class="game-url">
                     <div class="url-label">游戏URL:</div>
                     <div class="url-value">https://h5.stg.g123.jp/game/kumo</div>
-                    <button class="copy-btn" onclick="copyTableHTML()">复制表格HTML</button>
+                    <button class="copy-btn" onclick="shareReport()">一鍵分享打點報告</button>
                 </div>
                 <div class="generation-time">生成时间: 2025/8/21 10:12:20</div>
             </div>
@@ -1051,23 +1051,91 @@
             }, 350);
         }
         
-        // 複製表格HTML
-        function copyTableHTML() {
-            const table = document.querySelector('.event-table');
-            const html = table.outerHTML;
+        // 一鍵分享打點報告
+        function shareReport() {
+            // 生成完整的報告HTML
+            const reportHTML = generateFullReport();
             
-            navigator.clipboard.writeText(html).then(() => {
-                alert('表格HTML已複製到剪貼板！');
-            }).catch(() => {
-                // 降級方案
-                const textArea = document.createElement('textarea');
-                textArea.value = html;
-                document.body.appendChild(textArea);
-                textArea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textArea);
-                alert('表格HTML已複製到剪貼板！');
-            });
+            // 創建Blob對象
+            const blob = new Blob([reportHTML], { type: 'text/html' });
+            
+            // 創建下載鏈接
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `打點報告_${new Date().toISOString().slice(0, 10)}.html`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            alert('打點報告已生成並下載！');
+        }
+        
+        // 生成完整報告HTML
+        function generateFullReport() {
+            const title = document.querySelector('.header h1').textContent;
+            const gameUrl = document.querySelector('.url-value').textContent;
+            const generationTime = document.querySelector('.generation-time').textContent;
+            const table = document.querySelector('.event-table');
+            
+            return `<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${title}</title>
+    <style>
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6; 
+            color: #333; 
+            margin: 0; 
+            padding: 20px; 
+            background: #ffffff; 
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+        .header { background: #ffffff; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #e0e0e0; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .header h1 { color: #333333; margin: 0 0 10px 0; font-size: 24px; font-weight: 600; }
+        .game-url { background: #f8f9fa; padding: 15px; border-radius: 6px; margin: 15px 0; border: 1px solid #e9ecef; }
+        .url-label { color: #6c757d; font-size: 14px; margin-bottom: 8px; font-weight: 500; }
+        .url-value { color: #333333; font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace; font-size: 14px; word-break: break-all; background: #ffffff; padding: 8px; border-radius: 4px; border: 1px solid #dee2e6; }
+        .generation-time { color: #6c757d; font-size: 14px; margin: 15px 0; font-weight: 500; }
+        .event-table { width: 100%; border-collapse: collapse; background: #ffffff; border-radius: 8px; overflow: hidden; border: 1px solid #e0e0e0; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .event-table th { background: #f8f9fa; color: #333333; padding: 15px; text-align: left; font-weight: 600; border-bottom: 1px solid #dee2e6; font-size: 14px; }
+        .event-table td { padding: 15px; border-bottom: 1px solid #f1f3f4; vertical-align: top; font-size: 14px; }
+        .event-status { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; text-transform: uppercase; }
+        .event-status.passed { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .event-status.failed { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .event-status.passed::before { content: "✅ "; }
+        .event-status.failed::before { content: "❌ "; }
+        .rules-list { list-style: none; padding: 0; margin: 0; }
+        .rule-item { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 8px; padding: 8px; background: #f8f9fa; border-radius: 4px; border: 1px solid #e9ecef; }
+        .rule-status { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
+        .rule-status.passed { background: #28a745; }
+        .rule-status.failed { background: #dc3545; }
+        .rule-text { flex: 1; font-size: 13px; line-height: 1.4; color: #333333; }
+        .screenshot-image { max-width: 120px; max-height: 80px; border-radius: 6px; border: 1px solid #dee2e6; }
+        .comment-display { background: #e3f2fd; border: 1px solid #2196f3; border-radius: 6px; padding: 12px; margin-top: 8px; font-size: 13px; color: #1976d2; }
+        .comment-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+        .comment-time { font-size: 11px; color: #6c757d; }
+        .comment-text { margin-top: 4px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>${title}</h1>
+            <div class="game-url">
+                <div class="url-label">游戏URL:</div>
+                <div class="url-value">${gameUrl}</div>
+            </div>
+            <div class="generation-time">${generationTime}</div>
+        </div>
+        ${table.outerHTML}
+    </div>
+</body>
+</html>`;
         }
         
         // 鍵盤快捷鍵
