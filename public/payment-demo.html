@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>G123 支付界面 - 自動填入演示</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        .game-background {
+            background: linear-gradient(135deg, #1e293b, #334155);
+            min-height: 100vh;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 40px;
+        }
+
+        /* 右側控制面板 */
+        .control-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 24px;
+            width: 280px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .control-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .control-header h3 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .version-badge {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .control-section {
+            margin-bottom: 20px;
+            padding: 16px;
+            background: #f8fafc;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .control-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .control-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .control-label .icon {
+            font-size: 16px;
+        }
+
+        .control-hint {
+            display: flex;
+            align-items: flex-start;
+            gap: 6px;
+            font-size: 12px;
+            color: #6b7280;
+            line-height: 1.4;
+        }
+
+        .control-hint .icon {
+            font-size: 14px;
+            margin-top: 1px;
+        }
+
+        /* Toggle Switch 樣式 */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #d1d5db;
+            transition: 0.3s;
+            border-radius: 24px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: 0.3s;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .toggle-switch input:checked + .toggle-slider {
+            background-color: #3b82f6;
+        }
+
+        .toggle-switch input:checked + .toggle-slider:before {
+            transform: translateX(20px);
+        }
+
+        .control-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 20px;
+            padding-top: 16px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .action-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 16px;
+            background: #f3f4f6;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            color: #374151;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .action-btn:hover {
+            background: #e5e7eb;
+            border-color: #9ca3af;
+        }
+
+        .action-btn .icon {
+            font-size: 14px;
+        }
+
+        /* 支付界面容器 - 基於GIF截圖設計 */
+        .payment-container {
+            width: 100%;
+            max-width: 400px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            position: relative;
+            padding-top: 0; /* 移除頂部預留空間 */
+        }
+
+        .diamond-count {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        /* 支付模態框內容 */
+        .payment-content {
+            padding: 4px 24px 24px 24px; /* 大幅減少頂部padding */
+        }
+
+        .payment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px; /* 大幅減少底部margin */
+        }
+
+        .brand-title {
+            font-size: 20px; /* 稍微減小字體 */
+            font-weight: bold;
+            color: #1f2937;
+        }
+
+        .close-button {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #9ca3af;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            transition: color 0.2s ease;
+        }
+
+        .close-button:hover {
+            color: #6b7280;
+        }
+
+        .price-section {
+            text-align: center;
+            margin-bottom: 16px; /* 進一步減少margin */
+        }
+
+        .price {
+            font-size: 28px; /* 稍微減小字體 */
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 4px; /* 進一步減少margin */
+        }
+
+        .item-info {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            color: #6b7280;
+            font-size: 16px;
+        }
+
+        .divider {
+            height: 1px;
+            background: #e5e7eb;
+            margin: 16px 0; /* 進一步減少margin */
+        }
+
+        .payment-methods-title {
+            text-align: center;
+            font-size: 16px; /* 稍微減小字體 */
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 12px; /* 進一步減少margin */
+        }
+
+        .payment-methods-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px; /* 減少網格間距 */
+            margin-bottom: 20px; /* 減少底部margin */
+        }
+
+        .payment-method {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 12px 6px; /* 減少padding */
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: white;
+        }
+
+        .payment-method:hover {
+            border-color: #3b82f6;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .payment-method.selected {
+            border-color: #3b82f6;
+            background: #eff6ff;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+        }
+
+        .payment-icon {
+            width: 40px; /* 稍微減小圖標 */
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            margin-bottom: 6px; /* 減少margin */
+            font-size: 18px; /* 稍微減小字體 */
+            font-weight: bold;
+        }
+
+        .payment-label {
+            font-size: 11px; /* 稍微減小字體 */
+            color: #374151;
+            text-align: center;
+            line-height: 1.2;
+        }
+
+        .confirm-button {
+            width: 100%;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .confirm-button:hover:not(:disabled) {
+            background: #2563eb;
+            transform: translateY(-1px);
+        }
+
+        .confirm-button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* 自動填入進度條樣式 */
+        .auto-fill-progress {
+            position: absolute;
+            top: -60px; /* 完全隱藏在容器上方 */
+            left: 0;
+            right: 0;
+            background: linear-gradient(90deg, #3b82f6, #2563eb);
+            color: white;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 10;
+            transition: top 0.3s ease;
+            border-radius: 16px 16px 0 0;
+        }
+
+        .auto-fill-progress.show {
+            top: 0; /* 滑入到容器頂部 */
+        }
+
+        .auto-fill-text {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .progress-bar {
+            width: 80px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: white;
+            border-radius: 2px;
+            width: 0%;
+            transition: width 1.8s ease-in-out;
+        }
+
+        /* 響應式設計 */
+        @media (max-width: 1200px) {
+            .game-background {
+                flex-direction: column;
+                gap: 20px;
+                padding: 20px;
+            }
+            
+            .control-panel {
+                width: 100%;
+                max-width: 400px;
+                order: -1;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .game-background {
+                padding: 10px;
+            }
+            
+            .payment-container {
+                margin: 0;
+                border-radius: 12px;
+            }
+
+            .payment-content {
+                padding: 20px;
+            }
+
+            .payment-methods-grid {
+                gap: 8px;
+            }
+
+            .payment-method {
+                padding: 12px 6px;
+            }
+
+            .payment-icon {
+                width: 40px;
+                height: 40px;
+                font-size: 18px;
+            }
+
+            .payment-label {
+                font-size: 11px;
+            }
+            
+            .control-panel {
+                padding: 16px;
+            }
+            
+            .control-section {
+                padding: 12px;
+            }
+        }
+
+        /* 推薦標籤 */
+        .recommended-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            z-index: 5;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        /* 引導提示 */
+        .guide-hint {
+            background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+            border: 1px solid #bae6fd;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #0369a1;
+            font-size: 14px;
+        }
+
+        .guide-hint .icon {
+            font-size: 16px;
+        }
+
+        /* 信用卡預設高亮 */
+        .payment-method.credit-default {
+            border-color: #3b82f6;
+            background: #f8fafc;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15);
+        }
+
+        .payment-method.credit-default:hover {
+            border-color: #2563eb;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+        }
+    </style>
+</head>
+<body>
+    <div class="game-background">
+        <!-- 右側控制面板 -->
+        <div class="control-panel">
+            <div class="control-header">
+                <h3>測試控制台</h3>
+                <span class="version-badge">v1.0</span>
+            </div>
+            
+            <div class="control-section">
+                <div class="control-item">
+                    <div class="control-label">
+                        <span class="icon">💳</span>
+                        <span>自動填入支付信息</span>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="autoFillToggle" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <div class="control-hint">
+                    <span class="icon">💡</span>
+                    <span>開啟後點擊信用卡將自動填入測試數據</span>
+                </div>
+            </div>
+            
+            <div class="control-section">
+                <div class="control-item">
+                    <div class="control-label">
+                        <span class="icon">⚡</span>
+                        <span>快速測試模式</span>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="quickTestToggle">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <div class="control-hint">
+                    <span class="icon">🚀</span>
+                    <span>跳過動畫直接完成支付流程</span>
+                </div>
+            </div>
+            
+            <div class="control-section">
+                <div class="control-item">
+                    <div class="control-label">
+                        <span class="icon">🎯</span>
+                        <span>推薦標籤顯示</span>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="recommendToggle" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <div class="control-hint">
+                    <span class="icon">🏷️</span>
+                    <span>在信用卡上顯示推薦標籤</span>
+                </div>
+            </div>
+            
+            <div class="control-actions">
+                <button class="action-btn" onclick="resetAllSettings()">
+                    <span class="icon">🔄</span>
+                    重置設置
+                </button>
+                <button class="action-btn" onclick="toggleControlPanel()">
+                    <span class="icon">⚙️</span>
+                    隱藏面板
+                </button>
+            </div>
+        </div>
+        
+        <!-- 支付界面容器 -->
+        <div class="payment-container">
+            <!-- 自動填入進度條 -->
+            <div class="auto-fill-progress" id="autoFillProgress">
+                <span class="auto-fill-text" id="autoFillText">正在自動填入支付信息...</span>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+            </div>
+
+            <!-- 支付內容 -->
+            <div class="payment-content">
+                <!-- 支付標題 -->
+                <div class="payment-header">
+                    <h1 class="brand-title">G123</h1>
+                    <button class="close-button" onclick="closePayment()">×</button>
+                </div>
+
+                <!-- 價格區域 -->
+                <div class="price-section">
+                    <div class="price">¥100 (JPY)</div>
+                    <div class="item-info">
+                        <span>🛒</span>
+                        <span>鑽石</span>
+                    </div>
+                </div>
+
+                <div class="divider"></div>
+
+                <!-- 引導提示 -->
+                <div class="guide-hint" id="guideHint">
+                    <span class="icon">💡</span>
+                    <span><strong>測試環境：</strong>點擊<strong>信用卡</strong>可自動填入支付信息！</span>
+                </div>
+
+                <!-- 支付方式 -->
+                <div class="payment-methods-title">支付方法 ①</div>
+                <div class="payment-methods-grid">
+                    <!-- 信用卡 -->
+                    <div class="payment-method credit-default" onclick="selectPayment('credit')" style="position: relative;">
+                        <div class="recommended-badge">推薦</div>
+                        <div class="payment-icon" style="background: #8b5cf6; color: white;">💳</div>
+                        <div class="payment-label">信用卡</div>
+                    </div>
+
+                    <!-- Google Pay -->
+                    <div class="payment-method" onclick="selectPayment('google')">
+                        <div class="payment-icon" style="background: white; border: 1px solid #e5e7eb; color: #1f2937;">
+                            <div style="text-align: center;">
+                                <div style="color: #3b82f6; font-weight: bold;">G</div>
+                                <div style="font-size: 10px;">Pay</div>
+                            </div>
+                        </div>
+                        <div class="payment-label">Google Pay</div>
+                    </div>
+
+                    <!-- PayPay -->
+                    <div class="payment-method" onclick="selectPayment('paypay')">
+                        <div class="payment-icon" style="background: #ef4444; color: white;">P</div>
+                        <div class="payment-label">PayPay</div>
+                    </div>
+
+                    <!-- Amazon Pay -->
+                    <div class="payment-method" onclick="selectPayment('amazon')">
+                        <div class="payment-icon" style="background: #000; color: white;">
+                            <div style="text-align: center; font-size: 12px;">
+                                <div>pay</div>
+                                <div style="color: #f59e0b;">→</div>
+                            </div>
+                        </div>
+                        <div class="payment-label">Amazon Pay</div>
+                    </div>
+
+                    <!-- PayPal -->
+                    <div class="payment-method" onclick="selectPayment('paypal')">
+                        <div class="payment-icon" style="background: #3b82f6; color: white;">P</div>
+                        <div class="payment-label">PayPal</div>
+                    </div>
+
+                    <!-- Paidy -->
+                    <div class="payment-method" onclick="selectPayment('paidy')">
+                        <div class="payment-icon" style="background: #ec4899; color: white; font-size: 12px;">paidy</div>
+                        <div class="payment-label">稍後付款paidy</div>
+                    </div>
+
+                    <!-- 微信支付 -->
+                    <div class="payment-method" onclick="selectPayment('wechat')">
+                        <div class="payment-icon" style="background: #10b981; color: white;">
+                            <div style="text-align: center;">
+                                <div>💬</div>
+                                <div style="font-size: 10px;">✓</div>
+                            </div>
+                        </div>
+                        <div class="payment-label">微信支付</div>
+                    </div>
+
+                    <!-- BitCash -->
+                    <div class="payment-method" onclick="selectPayment('bitcash')">
+                        <div class="payment-icon" style="background: linear-gradient(135deg, #3b82f6, #f59e0b); color: white;">B</div>
+                        <div class="payment-label">BitCash</div>
+                    </div>
+
+                    <!-- 樂天Pay -->
+                    <div class="payment-method" onclick="selectPayment('rakuten')">
+                        <div class="payment-icon" style="background: #f97316; color: white; font-size: 12px;">R Pay</div>
+                        <div class="payment-label">楽天ポイント 使える!</div>
+                        <div class="payment-label" style="font-size: 10px; color: #6b7280;">樂天Pay</div>
+                    </div>
+                </div>
+
+                <!-- 確認按鈕 -->
+                <button class="confirm-button" id="confirmBtn" onclick="confirmPayment()" disabled>
+                    確認支付
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedPayment = null;
+
+        // 移除頁面加載時的自動填入
+        // window.addEventListener('load', () => {
+        //     setTimeout(() => {
+        //         startAutoFill();
+        //     }, 1000);
+        // });
+
+        function startAutoFill() {
+            const autoFillProgress = document.getElementById('autoFillProgress');
+            const autoFillText = document.getElementById('autoFillText');
+            const progressFill = document.getElementById('progressFill');
+
+            // 重置進度條狀態
+            progressFill.style.width = '0%';
+            progressFill.classList.remove('animate');
+            autoFillText.textContent = '正在自動填入支付信息...';
+            autoFillProgress.style.background = 'linear-gradient(90deg, #3b82f6, #2563eb)';
+
+            // 顯示進度條
+            autoFillProgress.classList.add('show');
+
+            // 強制重繪，確保動畫能正確觸發
+            progressFill.offsetHeight;
+
+            // 開始動畫 - 直接設置寬度動畫
+            setTimeout(() => {
+                progressFill.style.width = '100%';
+            }, 200);
+
+            // 2秒後隱藏進度條
+            setTimeout(() => {
+                autoFillProgress.classList.remove('show');
+                // 重置進度條
+                setTimeout(() => {
+                    progressFill.style.width = '0%';
+                }, 300);
+            }, 2000);
+        }
+
+        function closePayment() {
+            // 關閉支付頁面邏輯
+            console.log('關閉支付頁面');
+        }
+
+        function selectPayment(method) {
+            selectedPayment = method;
+            clearSelection();
+            
+            // 隱藏引導提示
+            const guideHint = document.getElementById('guideHint');
+            if (guideHint) {
+                guideHint.style.display = 'none';
+            }
+            
+            // 添加選中樣式
+            event.currentTarget.classList.add('selected');
+            
+            // 檢查自動填入開關狀態，只有開啟時才觸發自動填入
+            const autoFillToggle = document.getElementById('autoFillToggle');
+            if (method === 'credit' && autoFillToggle.checked) {
+                startAutoFill();
+            }
+            
+            updateConfirmButton();
+        }
+
+        function clearSelection() {
+            document.querySelectorAll('.payment-method').forEach(method => {
+                method.classList.remove('selected');
+            });
+        }
+
+        function updateConfirmButton() {
+            const confirmBtn = document.getElementById('confirmBtn');
+            if (selectedPayment) {
+                confirmBtn.disabled = false;
+                confirmBtn.textContent = `確認支付 - ${getPaymentName(selectedPayment)}`;
+            } else {
+                confirmBtn.disabled = true;
+                confirmBtn.textContent = '確認支付';
+            }
+        }
+
+        function getPaymentName(method) {
+            const names = {
+                'credit': '信用卡',
+                'google': 'Google Pay',
+                'paypay': 'PayPay',
+                'amazon': 'Amazon Pay',
+                'paypal': 'PayPal',
+                'paidy': '稍後付款paidy',
+                'wechat': '微信支付',
+                'bitcash': 'BitCash',
+                'rakuten': '樂天Pay'
+            };
+            return names[method] || '';
+        }
+
+        function confirmPayment() {
+            if (selectedPayment) {
+                console.log(`確認支付方式: ${getPaymentName(selectedPayment)}`);
+                // 處理支付邏輯
+            }
+        }
+
+        // 控制面板功能
+        function resetAllSettings() {
+            document.getElementById('autoFillToggle').checked = true;
+            document.getElementById('quickTestToggle').checked = false;
+            document.getElementById('recommendToggle').checked = true;
+            
+            // 重新顯示推薦標籤
+            updateRecommendBadge();
+            
+            console.log('設置已重置');
+        }
+
+        function toggleControlPanel() {
+            const controlPanel = document.querySelector('.control-panel');
+            const toggleBtn = document.querySelector('.action-btn:last-child');
+            
+            if (controlPanel.style.display === 'none') {
+                controlPanel.style.display = 'block';
+                toggleBtn.innerHTML = '<span class="icon">⚙️</span>隱藏面板';
+            } else {
+                controlPanel.style.display = 'none';
+                toggleBtn.innerHTML = '<span class="icon">👁️</span>顯示面板';
+            }
+        }
+
+        function updateRecommendBadge() {
+            const recommendToggle = document.getElementById('recommendToggle');
+            const recommendBadge = document.querySelector('.recommended-badge');
+            
+            if (recommendBadge) {
+                recommendBadge.style.display = recommendToggle.checked ? 'block' : 'none';
+            }
+        }
+
+        // 監聽 toggle 開關變化
+        document.addEventListener('DOMContentLoaded', function() {
+            const recommendToggle = document.getElementById('recommendToggle');
+            recommendToggle.addEventListener('change', updateRecommendBadge);
+            
+            // 初始化推薦標籤狀態
+            updateRecommendBadge();
+        });
+    </script>
+</body>
+</html>
+

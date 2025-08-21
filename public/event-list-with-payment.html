@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>H5 Helper - Event List with Payment</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1a1a1a;
+            color: #ffffff;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        .left-panel {
+            width: 300px;
+            background: #2d2d2d;
+            border-right: 1px solid #404040;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .center-panel {
+            flex: 1;
+            background: #1a1a1a;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .right-panel {
+            width: 400px;
+            background: #2d2d2d;
+            border-left: 1px solid #404040;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .top-bar {
+            background: #333;
+            padding: 15px 20px;
+            border-bottom: 1px solid #404040;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .bottom-status {
+            background: #333;
+            padding: 15px 20px;
+            border-top: 1px solid #404040;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .panel-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #e0e0e0;
+        }
+
+        .page-item {
+            background: #404040;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            border: 1px solid #555;
+        }
+
+        .page-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #ffffff;
+        }
+
+        .page-id {
+            font-size: 12px;
+            color: #b0b0b0;
+            margin-bottom: 10px;
+            font-family: monospace;
+        }
+
+        .status-tag {
+            display: inline-block;
+            background: #f39c12;
+            color: #000;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-bottom: 10px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            margin-right: 8px;
+        }
+
+        .btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+
+        .btn:hover {
+            background: #2980b9;
+        }
+
+        .btn-green {
+            background: #27ae60;
+        }
+
+        .btn-green:hover {
+            background: #229954;
+        }
+
+        .btn-yellow {
+            background: #f39c12;
+            color: #000;
+        }
+
+        .btn-yellow:hover {
+            background: #e67e22;
+        }
+
+        .new-page-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .new-page-btn:hover {
+            background: #2980b9;
+        }
+
+        .current-page-info {
+            background: #404040;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .resolution-info {
+            margin: 15px 0;
+        }
+
+        .url-input {
+            width: 100%;
+            padding: 10px;
+            background: #555;
+            border: 1px solid #666;
+            border-radius: 4px;
+            color: white;
+            margin: 10px 0;
+        }
+
+        .device-buttons {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .device-btn {
+            background: #555;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .device-btn.active {
+            background: #3498db;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .export-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            margin-top: 20px;
+        }
+
+        .export-btn:hover {
+            background: #c0392b;
+        }
+
+        .checklist {
+            background: #404040;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .checklist-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .progress {
+            background: #555;
+            border-radius: 10px;
+            padding: 4px;
+            color: white;
+            font-size: 14px;
+        }
+
+        .current-step {
+            background: #f39c12;
+            color: #000;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .more-btn {
+            background: #555;
+            color: white;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: auto;
+        }
+
+        .more-btn:hover {
+            background: #666;
+        }
+
+        .auto-payment {
+            background: #404040;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .auto-payment-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            background: #27ae60;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .running-btn {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-left: auto;
+        }
+
+        .action-row {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+
+        .session-info {
+            background: #404040;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .session-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .session-count {
+            background: #3498db;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            margin-right: 10px;
+        }
+
+        .event-log {
+            background: #404040;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            margin-left: -550px;
+            margin-top: 200px;
+        }
+
+        .log-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #555;
+        }
+
+        .log-item:last-child {
+            border-bottom: none;
+        }
+
+        .log-status {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .log-status.success {
+            background: #27ae60;
+            color: white;
+        }
+
+        .log-status.failed {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .recording-status-bar {
+            background: #e74c3c;
+            color: white;
+            padding: 10px 20px;
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .recording-status-bar.show {
+            display: flex;
+        }
+
+        .recording-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .context-menu {
+            position: absolute;
+            background: #404040;
+            border: 1px solid #555;
+            border-radius: 8px;
+            padding: 8px 0;
+            min-width: 200px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            display: none;
+            z-index: 1000;
+            right: 350px;
+        }
+
+        .context-menu-item {
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: background 0.2s;
+            border-bottom: 1px solid #555;
+        }
+
+        .context-menu-item:last-child {
+            border-bottom: none;
+        }
+
+        .context-menu-item:hover {
+            background: #555;
+        }
+
+        .toggle-switch {
+            width: 50px;
+            height: 24px;
+            background: #555;
+            border-radius: 12px;
+            cursor: pointer;
+            position: relative;
+            transition: background 0.3s;
+        }
+
+        .toggle-switch.active {
+            background: #27ae60;
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.3s;
+        }
+
+        .toggle-switch.active::after {
+            transform: translateX(26px);
+        }
+
+        .tab-buttons {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .game-content-removed {
+            color: #b0b0b0;
+            font-style: italic;
+            text-align: center;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="top-bar">
+        <div class="flex items-center">
+            <h1 class="text-xl font-bold">H5 Helper</h1>
+            <span class="ml-4 text-sm text-gray-400">20250819061915.0.0</span>
+        </div>
+        <div class="flex gap-4">
+            <button class="btn">三单屏模式</button>
+            <button class="btn">分屏模式</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="left-panel">
+            <h2 class="panel-title">页面管理</h2>
+            
+            <div class="page-item">
+                <div class="page-title">kumo</div>
+                <div class="page-id">G2FPONIWG</div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="cache1">
+                    <label for="cache1">停用缓存</label>
+                </div>
+                <button class="btn">刷新</button>
+            </div>
+
+            <div class="page-item">
+                <div class="page-title">slime</div>
+                <div class="page-id">G2FΡΥΗΜΟΥ</div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="cache2">
+                    <label for="cache2">停用缓存</label>
+                </div>
+                <button class="btn">刷新</button>
+            </div>
+
+            <div class="page-item">
+                <div class="page-title">kumo</div>
+                <div class="page-id">G2FQ9B9TT</div>
+                <div class="status-tag">数据校验中</div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="cache3">
+                    <label for="cache3">停用缓存</label>
+                </div>
+                <button class="btn">刷新</button>
+            </div>
+
+            <button class="new-page-btn">+ 新建页面</button>
+            
+            <div class="game-content-removed">游戏内容区域已移除</div>
+        </div>
+
+        <div class="center-panel">
+            <div class="current-page-info">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <div class="text-lg font-semibold">当前页面: kumo</div>
+                        <div class="resolution-info">分辨率: 375x667</div>
+                    </div>
+                    <div class="text-right">
+                        <input type="text" class="url-input" value="https://h5.stg.g123.jp/game" readonly>
+                        <div class="device-buttons">
+                            <button class="device-btn">桌机</button>
+                            <button class="device-btn active">手机</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn">打点校验</button>
+                <button class="btn">资源分析</button>
+                <button class="btn">性能数据</button>
+                <button class="btn">日志</button>
+            </div>
+
+            <button class="export-btn" onclick="openReportEditor()">导出报告</button>
+
+            <div class="checklist">
+                <div class="checklist-header">
+                    <h3 class="text-lg font-semibold">Checklist</h3>
+                    <div class="progress">4/6</div>
+                </div>
+                <div class="current-step">
+                    <span>当前步骤:支付 完成此步骤后才能进行下一步</span>
+                    <div class="flex items-center gap-3">
+                        <button class="btn-yellow">跳过</button>
+                        <button class="more-btn" onclick="toggleContextMenu()">•••</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="auto-payment">
+                <div class="auto-payment-header">
+                    <div class="status-dot"></div>
+                    <div>
+                        <div class="font-semibold">自动填入支付信息</div>
+                        <div class="text-sm text-gray-400">测试环境:点击信用卡可自动填入支付信息</div>
+                    </div>
+                    <button class="running-btn">运行中</button>
+                </div>
+                <div class="action-row">
+                    <button class="btn-green">创角</button>
+                    <button class="btn-green">完成第一个任务</button>
+                    <button class="btn-green">升级</button>
+                    <button class="btn-green">支付</button>
+                </div>
+                <div class="action-row">
+                    <button class="btn">刷新</button>
+                    <button class="btn">切换服</button>
+                </div>
+            </div>
+
+            <div class="session-info">
+                <div class="session-header">
+                    <div class="session-count">5</div>
+                    <span class="font-semibold">Session1</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="right-panel">
+            <div class="tab-buttons">
+                <button class="btn">Elements</button>
+                <button class="btn">Console</button>
+                <button class="btn">Sources</button>
+                <button class="btn">Network</button>
+                <button class="btn">Performance</button>
+                <button class="btn">Memory</button>
+                <button class="btn">Application</button>
+                <button class="btn">Security</button>
+            </div>
+
+            <div class="event-log">
+                <h3 class="text-lg font-semibold mb-4">事件列表</h3>
+                <div class="log-item">
+                    <span>用户登录成功</span>
+                    <span class="log-status success">成功</span>
+                </div>
+                <div class="log-item">
+                    <span>游戏初始化</span>
+                    <span class="log-status success">成功</span>
+                </div>
+                <div class="log-item">
+                    <span>资源加载</span>
+                    <span class="log-status success">成功</span>
+                </div>
+                <div class="log-item">
+                    <span>支付验证</span>
+                    <span class="log-status failed">失败</span>
+                </div>
+                <div class="log-item">
+                    <span>数据同步</span>
+                    <span class="log-status success">成功</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="recording-status-bar" id="recordingStatusBar">
+        <div class="flex items-center gap-3">
+            <span>🔴 录制中</span>
+            <span id="recordingStatusTime">00:00:00</span>
+        </div>
+        <div class="recording-controls">
+            <button class="btn" id="stopBtn" onclick="stopRecording()">停止录制</button>
+        </div>
+    </div>
+
+    <div class="context-menu" id="contextMenu">
+        <div class="context-menu-item" onclick="startRecording()">开始录制</div>
+        <div class="context-menu-item" onclick="toggleSwitch()">切换开关</div>
+        <div class="context-menu-item" onclick="recordScreen()">录屏</div>
+        <div class="context-menu-item" onclick="exportData()">导出数据</div>
+        <div class="context-menu-item" onclick="settings()">设置</div>
+    </div>
+
+    <div class="bottom-status">
+        <div class="status-left">
+            <div class="flex items-center gap-4">
+                <div class="toggle-switch" onclick="toggleSwitch()"></div>
+                <span>自动模式</span>
+            </div>
+        </div>
+        <div class="status-right">
+            <span class="text-sm text-gray-400">H5 Helper v1.0.0</span>
+        </div>
+    </div>
+
+    <script>
+        function toggleContextMenu() {
+            const menu = document.getElementById('contextMenu');
+            menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+        }
+
+        // Close context menu when clicking outside
+        document.addEventListener('click', function(event) {
+            const menu = document.getElementById('contextMenu');
+            const moreBtn = document.querySelector('.more-btn');
+            if (!menu.contains(event.target) && !moreBtn.contains(event.target)) {
+                menu.style.display = 'none';
+            }
+        });
+
+        // Recording functionality
+        let isRecording = false;
+        let recordingStartTime = null;
+        let recordingTimer = null;
+        
+        const recordingStatusBar = document.getElementById('recordingStatusBar');
+        const recordingStatusTime = document.getElementById('recordingStatusTime');
+
+        function formatTime(ms) {
+            const totalSeconds = Math.floor(ms / 1000);
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+            return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        function updateRecordingTime() {
+            if (recordingStartTime) {
+                const elapsedTime = Date.now() - recordingStartTime;
+                const timeString = formatTime(elapsedTime);
+                recordingStatusTime.textContent = timeString;
+            }
+        }
+
+        function startRecording() {
+            isRecording = true;
+            recordingStartTime = Date.now();
+            
+            recordingStatusBar.classList.add('show');
+            updateRecordingTime();
+            recordingTimer = setInterval(updateRecordingTime, 100);
+            
+            // Hide context menu
+            document.getElementById('contextMenu').style.display = 'none';
+            
+            // Disable recording option in context menu
+            updateRecordingButtonState();
+        }
+
+        function stopRecording() {
+            isRecording = false;
+            recordingStartTime = null;
+            
+            if (recordingTimer) {
+                clearInterval(recordingTimer);
+                recordingTimer = null;
+            }
+            
+            recordingStatusBar.classList.remove('show');
+            
+            // Enable recording option in context menu
+            updateRecordingButtonState();
+        }
+
+        function updateRecordingButtonState() {
+            const recordingOption = document.querySelector('.context-menu-item:nth-child(3)');
+            if (recordingOption) {
+                if (isRecording) {
+                    recordingOption.style.opacity = '0.5';
+                    recordingOption.style.pointerEvents = 'none';
+                    recordingOption.style.cursor = 'not-allowed';
+                } else {
+                    recordingOption.style.opacity = '1';
+                    recordingOption.style.pointerEvents = 'auto';
+                    recordingOption.style.cursor = 'pointer';
+                }
+            }
+        }
+
+        // Report Editor functionality
+        function generateReportHTML() {
+            console.log('generateReportHTML function called');
+            
+            // Get current event data
+            const currentEvents = getCurrentEventData();
+            console.log('Current events:', currentEvents);
+            
+            const reportHTML = createReportTemplate(currentEvents);
+            console.log('Report HTML generated, length:', reportHTML.length);
+            
+            // Create and download HTML file
+            const blob = new Blob([reportHTML], { type: 'text/html;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `打点数据报告_${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.html`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            // Show success message
+            alert('报告已生成并下载！请在本地HTML文件中编辑，然后上传到云端。');
+        }
+
+        function getCurrentEventData() {
+            // Get current event log data
+            const eventItems = document.querySelectorAll('.log-item');
+            const events = [];
+            
+            eventItems.forEach(item => {
+                const text = item.querySelector('span:first-child').textContent;
+                const status = item.querySelector('span:last-child').textContent;
+                const isSuccess = status === '成功';
+                
+                events.push({
+                    text: text,
+                    status: status,
+                    isSuccess: isSuccess
+                });
+            });
+            
+            return events;
+        }
+
+        function createReportTemplate(events) {
+            const currentDate = new Date().toLocaleString('zh-TW');
+            const successCount = events.filter(e => e.isSuccess).length;
+            const totalCount = events.length;
+            
+            const eventListHTML = events.map(event => 
+                `<li class="event-item ${event.isSuccess ? 'success' : 'failed'}">
+                    <span class="event-text">${event.text}</span>
+                    <span class="event-status ${event.isSuccess ? 'success' : 'failed'}">${event.status}</span>
+                </li>`
+            ).join('');
+            
+            return `<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>打点数据报告</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 1200px; margin: 0 auto; padding: 20px; background: #f8f9fa; }
+        .header { background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 30px; text-align: center; }
+        .header h1 { color: #2c3e50; margin: 0 0 10px 0; font-size: 32px; }
+        .header .meta { color: #7f8c8d; font-size: 16px; }
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); text-align: center; }
+        .stat-number { font-size: 36px; font-weight: bold; color: #3498db; margin-bottom: 8px; }
+        .stat-label { color: #7f8c8d; font-size: 14px; }
+        .content-section { background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 30px; }
+        .section-title { color: #2c3e50; font-size: 24px; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #ecf0f1; }
+        .event-list { margin: 0; padding: 0; list-style: none; }
+        .event-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; margin-bottom: 10px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #e74c3c; }
+        .event-item.success { border-left-color: #27ae60; }
+        .event-item.failed { border-left-color: #e74c3c; }
+        .event-text { font-family: 'Courier New', monospace; font-size: 14px; }
+        .event-status { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; text-transform: uppercase; }
+        .event-status.success { background: #d5f4e6; color: #27ae60; }
+        .event-status.failed { background: #fadbd8; color: #e74c3c; }
+        .editable-content { min-height: 200px; padding: 20px; border: 2px dashed #bdc3c7; border-radius: 8px; margin: 20px 0; background: #f8f9fa; }
+        .editable-content:focus { outline: none; border-color: #3498db; background: #fff; }
+        .editable-content h3 { color: #2c3e50; margin-top: 0; }
+        .editable-content p { margin: 10px 0; }
+        .action-buttons { position: fixed; bottom: 30px; right: 30px; display: flex; gap: 15px; z-index: 1000; }
+        .action-btn { padding: 15px 25px; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+        .action-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.3); }
+        .btn-save { background: #27ae60; color: white; }
+        .btn-save:hover { background: #229954; }
+        .btn-upload { background: #3498db; color: white; }
+        .btn-upload:hover { background: #2980b9; }
+        .btn-preview { background: #f39c12; color: white; }
+        .btn-preview:hover { background: #e67e22; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1 contenteditable="true">打点数据报告</h1>
+        <div class="meta">生成时间: ${currentDate}</div>
+    </div>
+    
+    <div class="stats">
+        <div class="stat-card">
+            <div class="stat-number">${totalCount}</div>
+            <div class="stat-label">总事件数</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">${successCount}</div>
+            <div class="stat-label">成功事件</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">${totalCount - successCount}</div>
+            <div class="stat-label">失败事件</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">${Math.round((successCount / totalCount) * 100)}%</div>
+            <div class="stat-label">成功率</div>
+        </div>
+    </div>
+    
+    <div class="content-section">
+        <h2 class="section-title">事件列表</h2>
+        <ul class="event-list">
+            ${eventListHTML}
+        </ul>
+    </div>
+    
+    <div class="content-section">
+        <h2 class="section-title">详细分析</h2>
+        <div class="editable-content" contenteditable="true">
+            <h3>问题分析</h3>
+            <p>请在此处添加详细的问题分析和解决方案...</p>
+            <h3>改进建议</h3>
+            <p>请在此处添加具体的改进建议和后续计划...</p>
+            <h3>备注说明</h3>
+            <p>请在此处添加其他需要说明的内容...</p>
+        </div>
+    </div>
+    
+    <div class="content-section">
+        <h2 class="section-title">总结</h2>
+        <div class="editable-content" contenteditable="true">
+            <p>请在此处总结本次打点数据校验的结果和关键发现...</p>
+        </div>
+    </div>
+    
+    <div class="action-buttons">
+        <button class="action-btn btn-save" onclick="saveReport()">💾 保存</button>
+        <button class="action-btn btn-upload" onclick="uploadToCloud()">☁️ 上传云端</button>
+        <button class="action-btn btn-preview" onclick="previewReport()">👁️ 预览</button>
+    </div>
+    
+    <script>
+        // Report editing functionality
+        let isEditing = false;
+        
+        // Make headers editable
+        document.querySelectorAll('h1, h2').forEach(header => {
+            header.addEventListener('click', function() {
+                if (!isEditing) {
+                    this.contentEditable = true;
+                    this.focus();
+                    this.style.background = '#fff3cd';
+                    this.style.padding = '5px';
+                    this.style.borderRadius = '4px';
+                    isEditing = true;
+                }
+            });
+            
+            header.addEventListener('blur', function() {
+                this.contentEditable = false;
+                this.style.background = '';
+                this.style.padding = '';
+                this.style.borderRadius = '';
+                isEditing = false;
+            });
+        });
+        
+        // Save report locally
+        function saveReport() {
+            const reportData = {
+                title: document.querySelector('h1').textContent,
+                content: document.body.innerHTML,
+                timestamp: new Date().toISOString()
+            };
+            
+            localStorage.setItem('reportData', JSON.stringify(reportData));
+            alert('报告已保存到本地！');
+        }
+        
+        // Upload to cloud
+        function uploadToCloud() {
+            const reportData = {
+                title: document.querySelector('h1').textContent,
+                content: document.body.innerHTML,
+                timestamp: new Date().toISOString()
+            };
+            
+            // Simulate cloud upload
+            alert('正在上传到云端...');
+            
+            setTimeout(() => {
+                const cloudLink = 'https://cloud.example.com/reports/' + Date.now();
+                alert('上传成功！云端链接: ' + cloudLink);
+                
+                // Create download link
+                const link = document.createElement('a');
+                link.href = cloudLink;
+                link.textContent = '查看云端报告';
+                link.target = '_blank';
+                link.style.display = 'block';
+                link.style.marginTop = '10px';
+                link.style.padding = '10px';
+                link.style.background = '#27ae60';
+                link.style.color = 'white';
+                link.style.textDecoration = 'none';
+                link.style.borderRadius = '5px';
+                link.style.textAlign = 'center';
+                
+                document.querySelector('.action-buttons').appendChild(link);
+            }, 2000);
+        }
+        
+        // Preview report
+        function previewReport() {
+            const previewWindow = window.open('', '_blank');
+            previewWindow.document.write(document.documentElement.outerHTML);
+            previewWindow.document.close();
+        }
+        
+        // Auto-save every 30 seconds
+        setInterval(saveReport, 30000);
+        
+        // Show welcome message
+        window.addEventListener('load', function() {
+            alert('欢迎使用打点数据报告编辑器！点击标题可编辑，内容会自动保存。');
+        });
+    </script>
+</body>
+</html>`;
+        }
+
+        // Add click handler for recording option in context menu
+        document.addEventListener('DOMContentLoaded', function() {
+            const recordingOption = document.querySelector('.context-menu-item:nth-child(3)');
+            if (recordingOption) {
+                recordingOption.addEventListener('click', function() {
+                    if (!isRecording) {
+                        startRecording();
+                    }
+                });
+            }
+            // Initialize button state
+            updateRecordingButtonState();
+        });
+
+        // Toggle switches
+        document.querySelectorAll('.toggle-switch').forEach(function(toggle) {
+            toggle.addEventListener('click', function() {
+                this.classList.toggle('active');
+            });
+        });
+
+        // Add click handlers for other context menu items
+        document.querySelectorAll('.context-menu-item').forEach(function(item, index) {
+            if (index !== 2) { // Skip the recording option (index 2)
+                item.addEventListener('click', function() {
+                    // Function activated without notification
+                });
+            }
+        });
+
+        // Report Editor function
+        function openReportEditor() {
+            console.log('openReportEditor function called');
+            alert('導出報告按鈕已點擊！');
+            generateReportHTML();
+        }
+
+        // Other utility functions
+        function toggleSwitch() {
+            const toggle = document.querySelector('.toggle-switch');
+            toggle.classList.toggle('active');
+        }
+
+        function recordScreen() {
+            if (!isRecording) {
+                startRecording();
+            }
+        }
+
+        function exportData() {
+            alert('导出数据功能已启动');
+        }
+
+        function settings() {
+            alert('设置功能已启动');
+        }
+    </script>
+</body>
+</html>

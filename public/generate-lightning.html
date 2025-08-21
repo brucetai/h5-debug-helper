@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>生成白色閃電圖標</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1e293b;
+            color: #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            text-align: center;
+            background: #334155;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            color: #f8fafc;
+        }
+
+        .preview {
+            margin: 20px 0;
+            padding: 20px;
+            background: #1e293b;
+            border-radius: 8px;
+            display: inline-block;
+        }
+
+        .lightning-icon {
+            width: 32px;
+            height: 32px;
+            display: block;
+            margin: 10px auto;
+        }
+
+        .download-btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin: 10px;
+        }
+
+        .download-btn:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+        }
+
+        .size-options {
+            margin: 20px 0;
+        }
+
+        .size-btn {
+            background: #475569;
+            color: #e2e8f0;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            margin: 5px;
+            transition: all 0.2s ease;
+        }
+
+        .size-btn.active {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .size-btn:hover {
+            background: #6b7280;
+        }
+
+        .info {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #94a3b8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>白色閃電圖標生成器</h1>
+        
+        <div class="preview">
+            <span>預覽：</span>
+            <div class="lightning-icon">
+                <svg width="32" height="32" viewBox="0 0 24 24">
+                    <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" fill="#ffffff"/>
+                </svg>
+            </div>
+        </div>
+
+        <div class="size-options">
+            <span>選擇尺寸：</span><br>
+            <button class="size-btn active" onclick="setSize(16)">16x16</button>
+            <button class="size-btn" onclick="setSize(24)">24x24</button>
+            <button class="size-btn" onclick="setSize(32)">32x32</button>
+            <button class="size-btn" onclick="setSize(48)">48x48</button>
+            <button class="size-btn" onclick="setSize(64)">64x64</button>
+        </div>
+
+        <button class="download-btn" onclick="downloadLightning()">下載 PNG 圖片</button>
+
+        <div class="info">
+            <p>生成的圖片包含純白色閃電符號，背景透明</p>
+            <p>適用於深色主題界面</p>
+        </div>
+    </div>
+
+    <script>
+        let currentSize = 16;
+
+        function setSize(size) {
+            currentSize = size;
+            
+            // 更新按鈕狀態
+            document.querySelectorAll('.size-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // 更新預覽
+            const preview = document.querySelector('.lightning-icon svg');
+            preview.setAttribute('width', size);
+            preview.setAttribute('height', size);
+        }
+
+        function downloadLightning() {
+            // 創建 SVG 元素
+            const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            svg.setAttribute('width', currentSize);
+            svg.setAttribute('height', currentSize);
+            svg.setAttribute('viewBox', '0 0 24 24');
+            
+            // 創建閃電路徑
+            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            path.setAttribute('d', 'M13 2L3 14h9l-1 8 10-12h-9l1-8z');
+            path.setAttribute('fill', '#ffffff');
+            
+            svg.appendChild(path);
+            
+            // 轉換 SVG 為字符串
+            const svgString = new XMLSerializer().serializeToString(svg);
+            const svgBlob = new Blob([svgString], {type: 'image/svg+xml'});
+            
+            // 創建 Canvas 來轉換 SVG 為 PNG
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = currentSize;
+            canvas.height = currentSize;
+            
+            // 設置背景為透明
+            ctx.clearRect(0, 0, currentSize, currentSize);
+            
+            // 創建圖片並載入 SVG
+            const img = new Image();
+            img.onload = function() {
+                ctx.drawImage(img, 0, 0, currentSize, currentSize);
+                
+                // 轉換為 PNG 並下載
+                canvas.toBlob(function(blob) {
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `lightning-white-${currentSize}x${currentSize}.png`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                }, 'image/png');
+            };
+            
+            img.src = URL.createObjectURL(svgBlob);
+        }
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('白色閃電圖標生成器已準備就緒');
+        });
+    </script>
+</body>
+</html>

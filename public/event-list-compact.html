@@ -1,0 +1,1562 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>G123 調試工具 - 事件列表</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 6px;
+        }
+
+        /* 頂部標題區域 */
+        .top-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .page-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #f8fafc;
+        }
+
+        .export-btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 13px;
+        }
+
+        .export-btn:hover {
+            background: #2563eb;
+        }
+
+        /* 主內容面板 - 縮小比例設計 */
+        .main-panel {
+            background: #1e293b;
+            border-radius: 6px;
+            padding: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 10px;
+        }
+
+        /* Checklist 區域 */
+        .checklist-section {
+            margin-bottom: 12px;
+            background: #374151;
+            border-radius: 6px;
+            padding: 12px;
+        }
+
+        .checklist-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .checklist-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #f8fafc;
+        }
+
+        .checklist-status {
+            color: #f8fafc;
+            font-size: 13px;
+            font-weight: 600;
+            margin-left: 4px;
+        }
+
+        .current-step-container {
+            background: #4b5563;
+            border-radius: 4px;
+            padding: 8px 10px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .current-step {
+            color: #e2e8f0;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .skip-btn {
+            background: none;
+            border: none;
+            color: #f8fafc;
+            font-size: 10px;
+            cursor: pointer;
+            padding: 2px 6px;
+            border-radius: 3px;
+            transition: color 0.2s ease;
+        }
+
+        .skip-btn:hover {
+            color: #e2e8f0;
+        }
+
+        .skip-btn:hover {
+            background: #4b5563;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: #4b5563;
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #3b82f6;
+            width: 66.67%;
+            border-radius: 2px;
+        }
+
+        /* 自動填入控制 */
+        .autofill-control {
+            margin-top: 12px;
+            padding: 12px;
+            background: #4b5563;
+            border-radius: 6px;
+        }
+
+        .control-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .control-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #f8fafc;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .control-label .icon {
+            font-size: 14px;
+        }
+
+        .control-hint {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #10b981;
+            font-size: 11px;
+            line-height: 1.4;
+        }
+
+        .control-hint .icon {
+            font-size: 12px;
+        }
+
+        /* Toggle Switch */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #4b5563;
+            transition: 0.3s;
+            border-radius: 24px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: 0.3s;
+            border-radius: 50%;
+        }
+
+        input:checked + .toggle-slider {
+            background-color: #3b82f6;
+        }
+
+        input:checked + .toggle-slider:before {
+            transform: translateX(20px);
+        }
+
+        /* 自動填入控制 */
+        .autofill-control {
+            padding: 8px;
+            background: #334155;
+            border-radius: 4px;
+            border: 1px solid #475569;
+        }
+
+        .control-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .control-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            color: #e2e8f0;
+        }
+
+        .control-label .icon {
+            font-size: 16px;
+        }
+
+        .control-hint {
+            display: flex;
+            align-items: flex-start;
+            gap: 4px;
+            font-size: 10px;
+            color: #94a3b8;
+            line-height: 1.3;
+        }
+
+        .control-hint .icon {
+            font-size: 14px;
+            margin-top: 1px;
+        }
+
+        /* 操作按鈕區域 */
+        .action-buttons-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            width: 100%;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            width: 100%;
+            justify-content: space-between;
+        }
+
+        .action-btn {
+            background: #15803d;
+            color: white;
+            border: none;
+            padding: 4px 6px;
+            border-radius: 4px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 10px;
+            flex: 1;
+            white-space: nowrap;
+        }
+
+        .action-btn:hover {
+            background: #166534;
+        }
+
+        .action-btn.payment {
+            background: #1e40af;
+            border: 1px solid #3b82f6;
+        }
+
+        .action-btn.payment:hover {
+            background: #1d4ed8;
+        }
+
+        .action-btn.inactive {
+            background: #374151;
+            color: white;
+        }
+
+        .action-btn.inactive:hover {
+            background: #1f2937;
+        }
+
+        /* 主要內容區域 */
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .panel {
+            background: #1e293b;
+            border-radius: 4px;
+            padding: 8px;
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #334155;
+        }
+
+        .panel-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #f8fafc;
+        }
+
+        .panel-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .panel-btn {
+            background: #334155;
+            color: #e2e8f0;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .panel-btn:hover {
+            background: #475569;
+        }
+
+        /* 事件列表 */
+        .event-group {
+            margin-bottom: 12px;
+        }
+
+        .event-group-header {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            padding: 6px;
+            border-radius: 4px;
+            transition: background 0.2s ease;
+        }
+
+        .event-group-header:hover {
+            background: #334155;
+        }
+
+        .event-group-title {
+            font-weight: 600;
+            color: #f8fafc;
+        }
+
+        .event-count {
+            background: #3b82f6;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .event-list {
+            margin-left: 12px;
+        }
+
+        .event-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 8px;
+            border-radius: 3px;
+            margin-bottom: 4px;
+            background: #334155;
+            transition: background 0.2s ease;
+        }
+
+        .event-item:hover {
+            background: #475569;
+        }
+
+        .event-dot {
+            width: 6px;
+            height: 6px;
+            background: #10b981;
+            border-radius: 50%;
+        }
+
+        .event-info {
+            flex: 1;
+        }
+
+        .event-name {
+            font-weight: 500;
+            color: #f8fafc;
+            font-size: 11px;
+        }
+
+        .event-time {
+            color: #94a3b8;
+            font-size: 9px;
+            margin-top: 1px;
+        }
+
+        .event-status {
+            background: #10b981;
+            color: white;
+            padding: 1px 6px;
+            border-radius: 3px;
+            font-size: 10px;
+            font-weight: 500;
+        }
+
+        /* 打點內容 */
+        .hitpoint-content {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 3px;
+            padding: 6px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 10px;
+            line-height: 1.2;
+            color: #e2e8f0;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        /* Settings Tag */
+        .settings-tag {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .settings-tag:hover {
+            background: #059669;
+        }
+
+        .tag-text {
+            font-size: 10px;
+        }
+
+        .tag-icon {
+            font-size: 10px;
+        }
+
+        /* 更多按鈕 */
+        .more-btn {
+            background: #4b5563;
+            color: #e2e8f0;
+            border: none;
+            padding: 4px 6px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+        }
+
+        .more-btn:hover {
+            background: #6b7280;
+        }
+
+        .more-dots {
+            font-size: 16px;
+            font-weight: bold;
+            line-height: 1;
+        }
+
+        /* 彈出菜單 */
+        .more-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            min-width: 160px;
+            display: none;
+            margin-top: 4px;
+        }
+
+        .more-menu.show {
+            display: block;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            color: #e2e8f0;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+            border-bottom: 1px solid #334155;
+            white-space: nowrap;
+        }
+
+        .menu-item:last-child {
+            border-bottom: none;
+        }
+
+        .menu-item:hover {
+            background: #334155;
+        }
+
+        .menu-item.disabled {
+            color: #6b7280;
+            cursor: not-allowed;
+        }
+
+        .menu-item.disabled:hover {
+            background: none;
+        }
+
+        .menu-icon {
+            font-size: 12px;
+            width: 16px;
+            text-align: center;
+            opacity: 0.7;
+            font-weight: normal;
+        }
+
+        /* 簡潔的線條圖標 */
+        .icon-screenshot::before {
+            content: "📷";
+            font-size: 12px;
+        }
+
+        .icon-globe::before {
+            content: "🌐";
+            font-size: 12px;
+        }
+
+        .icon-video::before {
+            content: "📹";
+            font-size: 12px;
+        }
+
+        .icon-lightning::before {
+            content: "⚡";
+            font-size: 12px;
+        }
+
+        /* 自定義閃電圖標 - 黑底白線框 */
+        .lightning-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 16px;
+            height: 16px;
+            background: #000000;
+            border: 1px solid #ffffff;
+            font-size: 10px;
+            color: #ffffff;
+        }
+
+        /* 菜單中的 toggle 項目 */
+        .menu-item.toggle-item {
+            justify-content: space-between;
+            cursor: default;
+        }
+
+        .menu-item.toggle-item:hover {
+            background: none;
+        }
+
+        .menu-item.toggle-item .menu-icon {
+            font-size: 12px;
+            opacity: 0.7;
+            font-weight: normal;
+        }
+
+        .menu-toggle {
+            width: 32px;
+            height: 18px;
+        }
+
+        .menu-toggle .toggle-slider {
+            background-color: #4b5563;
+        }
+
+        .menu-toggle .toggle-slider:before {
+            height: 12px;
+            width: 12px;
+            left: 3px;
+            bottom: 3px;
+        }
+
+        .menu-toggle input:checked + .toggle-slider {
+            background-color: #3b82f6;
+        }
+
+        .menu-toggle input:checked + .toggle-slider:before {
+            transform: translateX(14px);
+        }
+
+        /* 設定模態框 */
+        .settings-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .settings-modal-content {
+            background: #1e293b;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 350px;
+            border: 1px solid #334155;
+        }
+
+        .settings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 24px;
+            border-bottom: 1px solid #334155;
+        }
+
+        .settings-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #f8fafc;
+            margin: 0;
+        }
+
+        .settings-content {
+            padding: 24px;
+        }
+
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .setting-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #f8fafc;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .setting-label .icon {
+            font-size: 16px;
+        }
+
+        .setting-hint {
+            display: flex;
+            align-items: flex-start;
+            gap: 6px;
+            color: #94a3b8;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+
+        .setting-hint .icon {
+            font-size: 14px;
+            margin-top: 1px;
+        }
+
+        /* Toggle Switch */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #475569;
+            transition: 0.3s;
+            border-radius: 24px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: 0.3s;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .toggle-switch input:checked + .toggle-slider {
+            background-color: #3b82f6;
+        }
+
+        .toggle-switch input:checked + .toggle-slider:before {
+            transform: translateX(20px);
+        }
+
+        /* 支付模態框 */
+        .payment-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .payment-modal-content {
+            background: white;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 400px;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        /* 自動填入進度條 */
+        .auto-fill-progress {
+            position: absolute;
+            top: -60px;
+            left: 0;
+            right: 0;
+            background: linear-gradient(90deg, #3b82f6, #2563eb);
+            color: white;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 10;
+            transition: top 0.3s ease;
+            border-radius: 16px 16px 0 0;
+        }
+
+        .auto-fill-progress.show {
+            top: 0;
+        }
+
+        .auto-fill-text {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        /* 支付內容 */
+        .payment-content {
+            padding: 24px;
+        }
+
+        .payment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .brand-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1f2937;
+        }
+
+        .close-button {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #9ca3af;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            transition: color 0.2s ease;
+        }
+
+        .close-button:hover {
+            color: #6b7280;
+        }
+
+        .price-section {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .price {
+            font-size: 32px;
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 8px;
+        }
+
+        .item-info {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            color: #6b7280;
+            font-size: 16px;
+        }
+
+        .divider {
+            height: 1px;
+            background: #e5e7eb;
+            margin: 20px 0;
+        }
+
+        .guide-hint {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #fef3c7;
+            color: #92400e;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .payment-methods-title {
+            text-align: center;
+            font-size: 18px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 16px;
+        }
+
+        .payment-methods-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .payment-method {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 16px 8px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: white;
+            position: relative;
+        }
+
+        .payment-method:hover {
+            border-color: #3b82f6;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .payment-method.selected {
+            border-color: #3b82f6;
+            background: #eff6ff;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+        }
+
+        .recommended-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 600;
+            z-index: 5;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .payment-icon {
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .payment-label {
+            font-size: 12px;
+            color: #374151;
+            text-align: center;
+            line-height: 1.2;
+        }
+
+        .confirm-button {
+            width: 100%;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .confirm-button:hover:not(:disabled) {
+            background: #2563eb;
+            transform: translateY(-1px);
+        }
+
+        .confirm-button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* 響應式設計 */
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 16px;
+            }
+            
+            .action-buttons-container {
+                flex-direction: column;
+                gap: 16px;
+            }
+            
+            .action-buttons {
+                justify-content: center;
+            }
+            
+            .action-btn.skip {
+                align-self: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 頂部標題區域 -->
+    <div class="container">
+        <div class="top-header">
+            <h1 class="page-title">事件列表</h1>
+            <button class="export-btn">导出报告</button>
+        </div>
+
+        <!-- 主內容面板 -->
+        <div class="main-panel">
+            <!-- Checklist 區域 -->
+            <div class="checklist-section">
+                <div class="checklist-header">
+                    <div class="checklist-title">Checklist: <span class="checklist-status">4/6</span></div>
+                </div>
+                
+                <div class="current-step-container">
+                    <div class="current-step">当前步骤: 支付 完成此步骤后才能进行下一步</div>
+                    <button class="skip-btn">跳过</button>
+                </div>
+                
+                <!-- 自動填入控制 -->
+                <div class="autofill-control">
+                    <div class="control-item">
+                        <div class="control-label">
+                            <span>自动填入支付信息</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px; position: relative;">
+                            <button class="settings-tag" onclick="openSettings()">
+                                <span class="tag-text">运行中</span>
+                                <span class="tag-icon">🔄</span>
+                            </button>
+                            <button class="more-btn" onclick="toggleMoreMenu()">
+                                <span class="more-dots">⋯</span>
+                            </button>
+                            <!-- 彈出菜單 -->
+                            <div class="more-menu" id="moreMenu">
+                                <div class="menu-item" onclick="handleMenuAction('screenshot')">
+                                    <span class="menu-icon">📷</span>
+                                    <span>截图</span>
+                                </div>
+                                <div class="menu-item" onclick="handleMenuAction('multiCurrency')">
+                                    <span class="menu-icon">🌐</span>
+                                    <span>测试多币种</span>
+                                </div>
+                                <div class="menu-item disabled" onclick="handleMenuAction('screenRecord')">
+                                    <span class="menu-icon">📹</span>
+                                    <span>录屏</span>
+                                </div>
+                                <div class="menu-item toggle-item">
+                                    <span class="menu-icon" style="color: #ffffff; filter: brightness(0) invert(1);">⚡</span>
+                                    <span>自动填入</span>
+                                    <label class="toggle-switch menu-toggle">
+                                        <input type="checkbox" id="menuAutoFillToggle" checked onchange="toggleMenuAutoFill()">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="control-hint">
+                        <span class="icon">🟢</span>
+                        <span>測試環境:點擊信用卡可自動填入支付信息!</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 操作按鈕區域 -->
+            <div class="action-buttons-container">
+                <div class="action-buttons">
+                    <button class="action-btn">创角</button>
+                    <button class="action-btn">完成第一个任务</button>
+                    <button class="action-btn">升级</button>
+                    <button class="action-btn payment" onclick="openPaymentModal()">支付</button>
+                    <button class="action-btn inactive">刷新</button>
+                    <button class="action-btn inactive">切换服</button>
+                </div>
+            </div>
+            
+            <!-- 進度條 -->
+            <div class="progress-bar">
+                <div class="progress-fill"></div>
+            </div>
+
+            <!-- 主要內容區域 -->
+            <div class="main-content">
+                <!-- 左側：事件列表 -->
+                <div class="panel">
+                    <div class="panel-header">
+                        <div class="panel-title">事件列表</div>
+                        <div class="panel-actions">
+                            <button class="panel-btn">清空</button>
+                            <button class="panel-btn">刷新</button>
+                        </div>
+                    </div>
+
+                    <div class="event-group">
+                        <div class="event-group-header">
+                            <span class="event-group-title">Session2</span>
+                            <span class="event-count">3</span>
+                        </div>
+                        <div class="event-list">
+                            <div class="event-item">
+                                <div class="event-dot"></div>
+                                <div class="event-info">
+                                    <div class="event-name">p_paystart</div>
+                                    <div class="event-time">2024-01-15 14:30:25</div>
+                                </div>
+                                <div class="event-status">成功</div>
+                            </div>
+                            <div class="event-item">
+                                <div class="event-dot"></div>
+                                <div class="event-info">
+                                    <div class="event-name">g_milestone</div>
+                                    <div class="event-time">2024-01-15 14:28:15</div>
+                                </div>
+                                <div class="event-status">成功</div>
+                            </div>
+                            <div class="event-item">
+                                <div class="event-dot"></div>
+                                <div class="event-info">
+                                    <div class="event-name">p_paycomplete</div>
+                                    <div class="event-time">2024-01-15 14:31:05</div>
+                                </div>
+                                <div class="event-status">成功</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="event-group">
+                        <div class="event-group-header">
+                            <span class="event-group-title">Session1</span>
+                            <span class="event-count">2</span>
+                        </div>
+                        <div class="event-list">
+                            <div class="event-item">
+                                <div class="event-dot"></div>
+                                <div class="event-info">
+                                    <div class="event-name">g_login</div>
+                                    <div class="event-time">2024-01-15 14:25:10</div>
+                                </div>
+                                <div class="event-status">成功</div>
+                            </div>
+                            <div class="event-item">
+                                <div class="event-dot"></div>
+                                <div class="event-info">
+                                    <div class="event-name">g_levelup</div>
+                                    <div class="event-time">2024-01-15 14:27:30</div>
+                                </div>
+                                <div class="event-status">成功</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 右側：打點內容 -->
+                <div class="panel">
+                    <div class="panel-header">
+                        <div class="panel-title">打点内容</div>
+                        <div class="panel-actions">
+                            <button class="panel-btn">复制</button>
+                            <button class="panel-btn">格式化</button>
+                        </div>
+                    </div>
+
+                    <div class="hitpoint-content">
+{
+  "event": "p_paystart",
+  "uuid": "550e8400-e29b-41d4-a716-446655440000",
+  "timestamp": "2024-01-15T14:30:25.123Z",
+  "payload": {
+    "paymentMethods": [
+      "creditcard",
+      "googlepay", 
+      "paypal",
+      "wechatpay",
+      "alipay",
+      "jkopay"
+    ],
+    "defaultPayment": "creditcard",
+    "order_no": "G123_20240115_143025",
+    "items": [
+      {
+        "name": "首購禮包",
+        "amount": 22,
+        "currency": "TWD",
+        "quantity": 1
+      }
+    ],
+    "total_amount": 22,
+    "currency": "TWD"
+  }
+}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 設定模態框 -->
+    <div id="settingsModal" class="settings-modal">
+        <div class="settings-modal-content">
+            <div class="settings-header">
+                <h2 class="settings-title">設定</h2>
+                <button class="close-button" onclick="closeSettings()">×</button>
+            </div>
+            
+            <div class="settings-content">
+                <div class="setting-item">
+                    <div class="setting-label">
+                        <span class="icon">⚡</span>
+                        <span>自动填入支付信息</span>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="autoFillToggle" checked onchange="toggleAutoFill()">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <div class="setting-hint">
+                    <span class="icon">💡</span>
+                    <span>開啟後點擊信用卡將自動填入測試數據</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 支付模態框 -->
+    <div id="paymentModal" class="payment-modal">
+        <div class="payment-modal-content">
+            <!-- 自動填入進度條 -->
+            <div class="auto-fill-progress" id="autoFillProgress">
+                <span class="auto-fill-text">正在自動填入支付信息...</span>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+            </div>
+
+            <!-- 支付內容 -->
+            <div class="payment-content">
+                <!-- 支付標題 -->
+                <div class="payment-header">
+                    <h1 class="brand-title">G123</h1>
+                    <button class="close-button" onclick="closePaymentModal()">×</button>
+                </div>
+
+                <!-- 價格區域 -->
+                <div class="price-section">
+                    <div class="price">¥100 (JPY)</div>
+                    <div class="item-info">
+                        <span>🛒</span>
+                        <span>鑽石</span>
+                    </div>
+                </div>
+
+                <div class="divider"></div>
+
+                <!-- 引導提示 -->
+                <div class="guide-hint">
+                    <span class="icon">💡</span>
+                    <span><strong>測試環境：</strong>點擊<strong>信用卡</strong>可自動填入支付信息！</span>
+                </div>
+
+                <!-- 支付方式 -->
+                <div class="payment-methods-title">支付方法 ①</div>
+                <div class="payment-methods-grid">
+                    <!-- 信用卡 -->
+                    <div class="payment-method credit-default" onclick="selectPayment('credit')" style="position: relative;">
+                        <div class="recommended-badge">推薦</div>
+                        <div class="payment-icon" style="background: #8b5cf6; color: white;">💳</div>
+                        <div class="payment-label">信用卡</div>
+                    </div>
+
+                    <!-- Google Pay -->
+                    <div class="payment-method" onclick="selectPayment('google')">
+                        <div class="payment-icon" style="background: white; border: 1px solid #e5e7eb; color: #1f2937;">
+                            <div style="text-align: center;">
+                                <div style="color: #3b82f6; font-weight: bold;">G</div>
+                                <div style="font-size: 10px;">Pay</div>
+                            </div>
+                        </div>
+                        <div class="payment-label">Google Pay</div>
+                    </div>
+
+                    <!-- PayPal -->
+                    <div class="payment-method" onclick="selectPayment('paypal')">
+                        <div class="payment-icon" style="background: #3b82f6; color: white;">P</div>
+                        <div class="payment-label">PayPal</div>
+                    </div>
+
+                    <!-- 微信支付 -->
+                    <div class="payment-method" onclick="selectPayment('wechat')">
+                        <div class="payment-icon" style="background: #10b981; color: white;">
+                            <div style="text-align: center;">
+                                <div>💬</div>
+                                <div style="font-size: 10px;">✓</div>
+                            </div>
+                        </div>
+                        <div class="payment-label">微信支付</div>
+                    </div>
+
+                    <!-- 支付寶 -->
+                    <div class="payment-method" onclick="selectPayment('alipay')">
+                        <div class="payment-icon" style="background: #1677ff; color: white;">支</div>
+                        <div class="payment-label">支付寶</div>
+                    </div>
+
+                    <!-- JKO Pay -->
+                    <div class="payment-method" onclick="selectPayment('jko')">
+                        <div class="payment-icon" style="background: #f59e0b; color: white;">JKO</div>
+                        <div class="payment-label">JKO Pay</div>
+                    </div>
+                </div>
+
+                <!-- 確認按鈕 -->
+                <button class="confirm-button" id="confirmBtn" onclick="confirmPayment()" disabled>
+                    確認支付
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 支付模態框控制
+        function openPaymentModal() {
+            alert('支付功能已整合到 checklist 中！\n\n點擊「支付」按鈕會觸發支付測試流程。\n自動填入功能已開啟，點擊信用卡會自動填入測試數據。');
+        }
+
+        // 控制面板功能
+        function updatePaymentSettings() {
+            const autoFill = document.getElementById('autoFillToggle').checked;
+
+            console.log('自動填入設置已更新:', {
+                autoFill
+            });
+
+            // 記錄設置變更
+            addEventToList('p_settings_update', '自動填入設置已更新');
+        }
+
+        // 事件列表管理
+        function addEventToList(eventName, description) {
+            const eventList = document.querySelector('.event-list');
+            const eventItem = document.createElement('div');
+            eventItem.className = 'event-item';
+            
+            const timestamp = new Date().toLocaleString('zh-TW');
+            
+            eventItem.innerHTML = `
+                <div class="event-dot"></div>
+                <div class="event-info">
+                    <div class="event-name">${eventName}</div>
+                    <div class="event-time">${timestamp}</div>
+                </div>
+                <div class="event-status">成功</div>
+            `;
+            
+            // 插入到列表頂部
+            if (eventList.firstChild) {
+                eventList.insertBefore(eventItem, eventList.firstChild);
+            } else {
+                eventList.appendChild(eventItem);
+            }
+            
+            // 更新事件計數
+            updateEventCount();
+        }
+
+        function updateEventCount() {
+            const eventGroups = document.querySelectorAll('.event-group');
+            eventGroups.forEach(group => {
+                const eventList = group.querySelector('.event-list');
+                const eventCount = group.querySelector('.event-count');
+                const count = eventList.children.length;
+                eventCount.textContent = count;
+            });
+        }
+
+        // 初始化
+        // 切換更多菜單
+        function toggleMoreMenu() {
+            const moreMenu = document.getElementById('moreMenu');
+            moreMenu.classList.toggle('show');
+            addEventToList('打開更多菜單', '用戶點擊更多按鈕');
+        }
+
+        // 處理菜單動作
+        function handleMenuAction(action) {
+            const moreMenu = document.getElementById('moreMenu');
+            moreMenu.classList.remove('show');
+            
+            switch(action) {
+                case 'screenshot':
+                    addEventToList('截圖', '用戶點擊截圖功能');
+                    alert('截圖功能已觸發！');
+                    break;
+                case 'multiCurrency':
+                    addEventToList('測試多幣種', '用戶點擊測試多幣種功能');
+                    alert('測試多幣種功能已觸發！');
+                    break;
+                case 'screenRecord':
+                    addEventToList('錄屏', '用戶點擊錄屏功能（已禁用）');
+                    alert('錄屏功能目前不可用');
+                    break;
+            }
+        }
+
+        // 點擊外部關閉菜單
+        document.addEventListener('click', function(event) {
+            const moreMenu = document.getElementById('moreMenu');
+            const moreBtn = document.querySelector('.more-btn');
+            
+            if (!moreMenu.contains(event.target) && !moreBtn.contains(event.target)) {
+                moreMenu.classList.remove('show');
+            }
+        });
+
+        // 切換菜單中的自動填入開關
+        function toggleMenuAutoFill() {
+            const menuToggle = document.getElementById('menuAutoFillToggle');
+            const settingsToggle = document.getElementById('autoFillToggle');
+            const tagText = document.querySelector('.settings-tag .tag-text');
+            
+            // 同步設定模態框中的 toggle
+            if (settingsToggle) {
+                settingsToggle.checked = menuToggle.checked;
+            }
+            
+            // 更新標籤文字
+            if (menuToggle.checked) {
+                tagText.textContent = '运行中';
+                addEventToList('自動填入開啟', '通過菜單開啟自動填入功能');
+            } else {
+                tagText.textContent = '已关闭';
+                addEventToList('自動填入關閉', '通過菜單關閉自動填入功能');
+            }
+        }
+
+        // 打開設定畫面
+        function openSettings() {
+            const settingsModal = document.getElementById('settingsModal');
+            settingsModal.style.display = 'flex';
+            addEventToList('打開設定', '用戶點擊設定標籤');
+        }
+
+        // 關閉設定畫面
+        function closeSettings() {
+            const settingsModal = document.getElementById('settingsModal');
+            settingsModal.style.display = 'none';
+            addEventToList('關閉設定', '用戶關閉設定面板');
+        }
+
+        // 切換自動填入開關
+        function toggleAutoFill() {
+            const autoFillToggle = document.getElementById('autoFillToggle');
+            const menuToggle = document.getElementById('menuAutoFillToggle');
+            const tagText = document.querySelector('.settings-tag .tag-text');
+            
+            // 同步菜單中的 toggle
+            if (menuToggle) {
+                menuToggle.checked = autoFillToggle.checked;
+            }
+            
+            if (autoFillToggle.checked) {
+                tagText.textContent = '运行中';
+                addEventToList('設定變更', '自動填入：已開啟');
+            } else {
+                tagText.textContent = '已关闭';
+                addEventToList('設定變更', '自動填入：已關閉');
+            }
+        }
+
+        // 打開支付界面
+        function openPaymentModal() {
+            const paymentModal = document.getElementById('paymentModal');
+            paymentModal.style.display = 'flex';
+            addEventToList('打開支付界面', '用戶點擊支付按鈕');
+        }
+
+        // 關閉支付界面
+        function closePaymentModal() {
+            const paymentModal = document.getElementById('paymentModal');
+            paymentModal.style.display = 'none';
+            addEventToList('關閉支付界面', '用戶關閉支付模態框');
+        }
+
+        // 選擇支付方式
+        function selectPayment(method) {
+            const paymentMethods = document.querySelectorAll('.payment-method');
+            paymentMethods.forEach(method => method.classList.remove('selected'));
+            
+            const selectedMethod = document.querySelector(`[onclick="selectPayment('${method}')"]`);
+            selectedMethod.classList.add('selected');
+            
+            const confirmBtn = document.getElementById('confirmBtn');
+            confirmBtn.disabled = false;
+            
+            addEventToList('選擇支付方式', `選擇了 ${method} 支付方式`);
+            
+            // 如果自動填入開啟，則開始自動填入
+            if (document.querySelector('.settings-tag .tag-text').textContent === '运行中') {
+                startAutoFill();
+            }
+        }
+
+        // 開始自動填入
+        function startAutoFill() {
+            const autoFillProgress = document.getElementById('autoFillProgress');
+            const progressFill = document.getElementById('progressFill');
+            
+            autoFillProgress.classList.add('show');
+            progressFill.style.width = '0%';
+            
+            // 強制重繪
+            progressFill.offsetHeight;
+            
+            setTimeout(() => {
+                progressFill.style.width = '100%';
+            }, 200);
+            
+            setTimeout(() => {
+                autoFillProgress.classList.remove('show');
+                setTimeout(() => {
+                    progressFill.style.width = '0%';
+                }, 300);
+            }, 2000);
+            
+            addEventToList('自動填入', '開始自動填入支付信息');
+        }
+
+        // 確認支付
+        function confirmPayment() {
+            addEventToList('確認支付', '用戶確認支付操作');
+            alert('支付成功！');
+            closePaymentModal();
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化設定
+        });
+    </script>
+</body>
+</html>
