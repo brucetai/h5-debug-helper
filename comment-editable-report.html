@@ -447,106 +447,106 @@
             <tbody>
                 <tr data-event="g_init">
                     <td>
-                        g_init <span class="comment-icon" onclick="addComment(this)">💬</span>
+                        g_init <span class="comment-icon">💬</span>
                     </td>
                     <td>
-                        <span class="event-status failed" onclick="toggleEventStatus(this)">失败</span>
+                        <span class="event-status failed">失败</span>
                     </td>
                     <td>
                         <ul class="rules-list">
                             <li class="rule-item">
-                                <span class="rule-status failed" onclick="toggleRuleStatus(this)"></span>
+                                <span class="rule-status failed"></span>
                                 <span class="rule-text">g_init需要遊戲最一開始上報</span>
-                                <span class="comment-icon" onclick="addComment(this)">💬</span>
+                                <span class="comment-icon">💬</span>
                             </li>
                             <li class="rule-item">
-                                <span class="rule-status passed" onclick="toggleRuleStatus(this)"></span>
+                                <span class="rule-status passed"></span>
                                 <span class="rule-text">g_init 事件后跟随g_register 事件,顺序正确</span>
-                                <span class="comment-icon" onclick="addComment(this)">💬</span>
+                                <span class="comment-icon">💬</span>
                             </li>
                             <li class="rule-item">
-                                <span class="rule-status passed" onclick="toggleRuleStatus(this)"></span>
+                                <span class="rule-status passed"></span>
                                 <span class="rule-text">g_init 事件在 p_game_loaded 事件之后,顺序正确</span>
-                                <span class="comment-icon" onclick="addComment(this)">💬</span>
+                                <span class="comment-icon">💬</span>
                             </li>
                         </ul>
                     </td>
                     <td class="screenshot-area">
-                        <div class="screenshot-placeholder" onclick="uploadScreenshot('g_init')">
+                        <div class="screenshot-placeholder">
                             📷 添加截图
                         </div>
-                        <input type="file" class="file-input" id="screenshot_g_init" accept="image/*" onchange="handleScreenshotUpload(event, 'g_init')">
+                        <input type="file" class="file-input" id="screenshot_g_init" accept="image/*">
                     </td>
                 </tr>
                 <tr data-event="g_register">
                     <td>
-                        g_register <span class="comment-icon" onclick="addComment(this)">💬</span>
+                        g_register <span class="comment-icon">💬</span>
                     </td>
                     <td>
-                        <span class="event-status passed" onclick="toggleEventStatus(this)">通过</span>
+                        <span class="event-status passed">通过</span>
                     </td>
                     <td>
                         <ul class="rules-list">
                             <li class="rule-item">
-                                <span class="rule-status passed" onclick="toggleRuleStatus(this)"></span>
+                                <span class="rule-status passed"></span>
                                 <span class="rule-text">schema 校验通过</span>
-                                <span class="comment-icon" onclick="addComment(this)">💬</span>
+                                <span class="comment-icon">💬</span>
                             </li>
                             <li class="rule-item">
-                                <span class="rule-status passed" onclick="toggleRuleStatus(this)"></span>
+                                <span class="rule-status passed"></span>
                                 <span class="rule-text">game_server_id 的值与其他事件一致</span>
-                                <span class="comment-icon" onclick="addComment(this)">💬</span>
+                                <span class="comment-icon">💬</span>
                             </li>
                             <li class="rule-item">
-                                <span class="rule-status passed" onclick="toggleRuleStatus(this)"></span>
+                                <span class="rule-status passed"></span>
                                 <span class="rule-text">role_id 的值与其他事件一致</span>
-                                <span class="comment-icon" onclick="addComment(this)">💬</span>
+                                <span class="comment-icon">💬</span>
                             </li>
                             <li class="rule-item">
-                                <span class="rule-status passed" onclick="toggleRuleStatus(this)"></span>
+                                <span class="rule-status passed"></span>
                                 <span class="rule-text">g_register 事件用户生涯仅一次</span>
-                                <span class="comment-icon" onclick="addComment(this)">💬</span>
+                                <span class="comment-icon">💬</span>
                             </li>
                             <li class="rule-item">
-                                <span class="rule-status passed" onclick="toggleRuleStatus(this)"></span>
+                                <span class="rule-status passed"></span>
                                 <span class="rule-text">g_register 事件与g_init 事件的时间间隔符合要求</span>
-                                <span class="comment-icon" onclick="addComment(this)">💬</span>
+                                <span class="comment-icon">💬</span>
                             </li>
                         </ul>
                     </td>
                     <td class="screenshot-area">
-                        <div class="screenshot-placeholder" onclick="uploadScreenshot('g_register')">
+                        <div class="screenshot-placeholder">
                             📷 添加截图
                         </div>
-                        <input type="file" class="file-input" id="screenshot_g_register" accept="image/*" onchange="handleScreenshotUpload(event, 'g_register')">
+                        <input type="file" class="file-input" id="screenshot_g_register" accept="image/*">
                     </td>
                 </tr>
                 <tr data-event="g_milestone">
                     <td>
-                        g_milestone <span class="comment-icon" onclick="addComment(this)">💬</span>
+                        g_milestone <span class="comment-icon">💬</span>
                     </td>
                     <td>
-                        <span class="event-status passed" onclick="toggleEventStatus(this)">通过</span>
+                        <span class="event-status passed">通过</span>
                     </td>
                     <td>
                         <ul class="rules-list">
                             <li class="rule-item">
-                                <span class="rule-status passed" onclick="toggleRuleStatus(this)"></span>
+                                <span class="rule-status passed"></span>
                                 <span class="rule-text">milestone 事件在正确时机触发</span>
-                                <span class="comment-icon" onclick="addComment(this)">💬</span>
+                                <span class="comment-icon">💬</span>
                             </li>
                             <li class="rule-item">
-                                <span class="rule-status passed" onclick="toggleRuleStatus(this)"></span>
+                                <span class="rule-status passed"></span>
                                 <span class="rule-text">milestone 数据格式正确</span>
-                                <span class="comment-icon" onclick="addComment(this)">💬</span>
+                                <span class="comment-icon">💬</span>
                             </li>
                         </ul>
                     </td>
                     <td class="screenshot-area">
-                        <div class="screenshot-placeholder" onclick="uploadScreenshot('g_milestone')">
+                        <div class="screenshot-placeholder">
                             📷 添加截图
                         </div>
-                        <input type="file" class="file-input" id="screenshot_g_milestone" accept="image/*" onchange="handleScreenshotUpload(event, 'g_milestone')">
+                        <input type="file" class="file-input" id="screenshot_g_milestone" accept="image/*">
                     </td>
                 </tr>
             </tbody>
@@ -814,9 +814,21 @@
                     
                     const screenshotArea = document.querySelector(`tr[data-event="${eventName}"] .screenshot-area`);
                     screenshotArea.innerHTML = `
-                        <img src="${imageData}" class="screenshot-image" onclick="viewScreenshot('${imageData}')" alt="截图">
-                        <input type="file" class="file-input" id="screenshot_${eventName}" accept="image/*" onchange="handleScreenshotUpload(event, '${eventName}')">
+                        <img src="${imageData}" class="screenshot-image" alt="截图">
+                        <input type="file" class="file-input" id="screenshot_${eventName}" accept="image/*">
                     `;
+                    
+                    // 添加事件監聽器
+                    const img = screenshotArea.querySelector('.screenshot-image');
+                    const input = screenshotArea.querySelector('.file-input');
+                    
+                    img.addEventListener('click', function() {
+                        viewScreenshot(imageData);
+                    });
+                    
+                    input.addEventListener('change', function(event) {
+                        handleScreenshotUpload(event, eventName);
+                    });
                     
                     showSuccessMessage('截图上传成功');
                 };
@@ -904,6 +916,42 @@
                     e.stopPropagation();
                     console.log('Icon clicked:', this);
                     addComment(this);
+                });
+            });
+            
+            // 為所有事件狀態添加點擊事件監聽器
+            document.querySelectorAll('.event-status').forEach(status => {
+                status.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    toggleEventStatus(this);
+                });
+            });
+            
+            // 為所有規則狀態添加點擊事件監聽器
+            document.querySelectorAll('.rule-status').forEach(status => {
+                status.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    toggleRuleStatus(this);
+                });
+            });
+            
+            // 為所有截圖區域添加點擊事件監聽器
+            document.querySelectorAll('.screenshot-placeholder').forEach(placeholder => {
+                placeholder.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const eventName = this.closest('tr').dataset.event;
+                    uploadScreenshot(eventName);
+                });
+            });
+            
+            // 為所有文件輸入添加change事件監聽器
+            document.querySelectorAll('.file-input').forEach(input => {
+                input.addEventListener('change', function(e) {
+                    const eventName = this.id.replace('screenshot_', '');
+                    handleScreenshotUpload(e, eventName);
                 });
             });
         });
