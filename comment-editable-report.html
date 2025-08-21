@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>H5 遊戲事件追踪報告 - Comment編輯版</title>
+    <style>
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6; 
+            color: #333; 
+            margin: 0; 
+            padding: 20px; 
+            background: #ffffff; 
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            color: #333333;
+            margin: 0 0 10px 0;
+            font-size: 24px;
+            font-weight: 600;
+        }
+        
+        .game-url {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+            border: 1px solid #e9ecef;
+        }
+        
+        .url-label {
+            color: #6c757d;
+            font-size: 14px;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        .url-value {
+            color: #333333;
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+            font-size: 14px;
+            word-break: break-all;
+            background: #ffffff;
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #dee2e6;
+        }
+        
+        .generation-time {
+            color: #6c757d;
+            font-size: 14px;
+            margin: 15px 0;
+            font-weight: 500;
+        }
+        
+        .event-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .event-table th {
+            background: #f8f9fa;
+            color: #333333;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 1px solid #dee2e6;
+            font-size: 14px;
+        }
+        
+        .event-table td {
+            padding: 15px;
+            border-bottom: 1px solid #f1f3f4;
+            vertical-align: top;
+            font-size: 14px;
+        }
+        
+        .event-table tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .event-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .event-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .event-status:hover {
+            transform: scale(1.05);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        
+        .event-status.passed {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .event-status.failed {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .event-status.passed::before {
+            content: "✅ ";
+        }
+        
+        .event-status.failed::before {
+            content: "❌ ";
+        }
+        
+        .rules-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .rule-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            margin-bottom: 8px;
+            padding: 8px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            border: 1px solid #e9ecef;
+            transition: all 0.2s ease;
+        }
+        
+        .rule-item:hover {
+            background: #e9ecef;
+            border-color: #007bff;
+        }
+        
+        .rule-status {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            margin-top: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .rule-status:hover {
+            transform: scale(1.2);
+        }
+        
+        .rule-status.passed {
+            background: #28a745;
+        }
+        
+        .rule-status.failed {
+            background: #dc3545;
+        }
+        
+        .rule-text {
+            flex: 1;
+            font-size: 13px;
+            line-height: 1.4;
+            color: #333333;
+        }
+        
+        .screenshot-area {
+            text-align: center;
+            cursor: pointer;
+        }
+        
+        .screenshot-placeholder {
+            width: 120px;
+            height: 80px;
+            background: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6c757d;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .screenshot-placeholder:hover {
+            border-color: #007bff;
+            background: #e3f2fd;
+            color: #007bff;
+            transform: scale(1.05);
+        }
+        
+        .screenshot-image {
+            max-width: 120px;
+            max-height: 80px;
+            border-radius: 6px;
+            cursor: pointer;
+            border: 1px solid #dee2e6;
+            transition: all 0.2s ease;
+        }
+        
+        .screenshot-image:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        /* Comment 樣式 */
+        .comment-icon {
+            cursor: pointer;
+            font-size: 16px;
+            margin-left: 8px;
+            opacity: 0.6;
+            transition: all 0.2s ease;
+        }
+        
+        .comment-icon:hover {
+            opacity: 1;
+            transform: scale(1.1);
+        }
+        
+        .comment-bubble {
+            position: absolute;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 1000;
+            min-width: 250px;
+            max-width: 350px;
+        }
+        
+        .comment-bubble textarea {
+            width: 100%;
+            min-height: 80px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 8px;
+            font-family: inherit;
+            font-size: 14px;
+            resize: vertical;
+        }
+        
+        .comment-bubble .comment-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        
+        .comment-bubble button {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .comment-bubble .save-btn {
+            background: #007bff;
+            color: white;
+        }
+        
+        .comment-bubble .cancel-btn {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .comment-bubble .delete-btn {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .comment-display {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 8px;
+            margin-top: 8px;
+            font-size: 13px;
+            color: #495057;
+        }
+        
+        .comment-display .comment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+        
+        .comment-display .comment-time {
+            font-size: 11px;
+            color: #6c757d;
+        }
+        
+        .comment-display .comment-edit {
+            font-size: 11px;
+            color: #007bff;
+            cursor: pointer;
+        }
+        
+        .edit-hint {
+            background: #e3f2fd;
+            border: 1px solid #2196f3;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 20px 0;
+            color: #1976d2;
+            font-size: 14px;
+        }
+        
+        .edit-hint strong {
+            color: #1565c0;
+        }
+        
+        .file-input {
+            display: none;
+        }
+        
+        .success-message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #28a745;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            z-index: 1000;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.3s ease;
+        }
+        
+        .success-message.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 編輯提示 -->
+        <div class="edit-hint">
+            <strong>💬 Comment編輯提示：</strong>
+            點擊 💬 圖標添加評論，點擊狀態可切換，點擊截圖區域可上傳。所有評論會自動保存。
+        </div>
+        
+        <!-- 標題區域 -->
+        <div class="header">
+            <h1>H5 遊戲事件追踪報告 <span class="comment-icon" onclick="addComment(this)">💬</span></h1>
+            <div class="game-url">
+                <div class="url-label">游戏URL:</div>
+                <div class="url-value">https://h5.stg.g123.jp/game/kumo <span class="comment-icon" onclick="addComment(this)">💬</span></div>
+            </div>
+            <div class="generation-time">生成时间: 2025/8/21 10:12:20 <span class="comment-icon" onclick="addComment(this)">💬</span></div>
+        </div>
+        
+        <!-- 事件追踪表格 -->
+        <table class="event-table">
+            <thead>
+                <tr>
+                    <th>事件名称</th>
+                    <th>通过</th>
+                    <th>规则</th>
+                    <th>截图</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr data-event="g_init">
+                    <td>
+                        g_init <span class="comment-icon" onclick="addComment(this)">💬</span>
+                    </td>
+                    <td>
+                        <span class="event-status failed" onclick="toggleEventStatus(this)">失败</span>
+                    </td>
+                    <td>
+                        <ul class="rules-list">
+                            <li class="rule-item">
+                                <span class="rule-status failed" onclick="toggleRuleStatus(this)"></span>
+                                <span class="rule-text">g_init需要遊戲最一開始上報</span>
+                                <span class="comment-icon" onclick="addComment(this)">💬</span>
+                            </li>
+                            <li class="rule-item">
+                                <span class="rule-status passed" onclick="toggleRuleStatus(this)"></span>
+                                <span class="rule-text">g_init 事件后跟随g_register 事件,顺序正确</span>
+                                <span class="comment-icon" onclick="addComment(this)">💬</span>
+                            </li>
+                            <li class="rule-item">
+                                <span class="rule-status passed" onclick="toggleRuleStatus(this)"></span>
+                                <span class="rule-text">g_init 事件在 p_game_loaded 事件之后,顺序正确</span>
+                                <span class="comment-icon" onclick="addComment(this)">💬</span>
+                            </li>
+                        </ul>
+                    </td>
+                    <td class="screenshot-area">
+                        <div class="screenshot-placeholder" onclick="uploadScreenshot('g_init')">
+                            📷 添加截图
+                        </div>
+                        <input type="file" class="file-input" id="screenshot_g_init" accept="image/*" onchange="handleScreenshotUpload(event, 'g_init')">
+                    </td>
+                </tr>
+                <tr data-event="g_register">
+                    <td>
+                        g_register <span class="comment-icon" onclick="addComment(this)">💬</span>
+                    </td>
+                    <td>
+                        <span class="event-status passed" onclick="toggleEventStatus(this)">通过</span>
+                    </td>
+                    <td>
+                        <ul class="rules-list">
+                            <li class="rule-item">
+                                <span class="rule-status passed" onclick="toggleRuleStatus(this)"></span>
+                                <span class="rule-text">schema 校验通过</span>
+                                <span class="comment-icon" onclick="addComment(this)">💬</span>
+                            </li>
+                            <li class="rule-item">
+                                <span class="rule-status passed" onclick="toggleRuleStatus(this)"></span>
+                                <span class="rule-text">game_server_id 的值与其他事件一致</span>
+                                <span class="comment-icon" onclick="addComment(this)">💬</span>
+                            </li>
+                            <li class="rule-item">
+                                <span class="rule-status passed" onclick="toggleRuleStatus(this)"></span>
+                                <span class="rule-text">role_id 的值与其他事件一致</span>
+                                <span class="comment-icon" onclick="addComment(this)">💬</span>
+                            </li>
+                            <li class="rule-item">
+                                <span class="rule-status passed" onclick="toggleRuleStatus(this)"></span>
+                                <span class="rule-text">g_register 事件用户生涯仅一次</span>
+                                <span class="comment-icon" onclick="addComment(this)">💬</span>
+                            </li>
+                            <li class="rule-item">
+                                <span class="rule-status passed" onclick="toggleRuleStatus(this)"></span>
+                                <span class="rule-text">g_register 事件与g_init 事件的时间间隔符合要求</span>
+                                <span class="comment-icon" onclick="addComment(this)">💬</span>
+                            </li>
+                        </ul>
+                    </td>
+                    <td class="screenshot-area">
+                        <div class="screenshot-placeholder" onclick="uploadScreenshot('g_register')">
+                            📷 添加截图
+                        </div>
+                        <input type="file" class="file-input" id="screenshot_g_register" accept="image/*" onchange="handleScreenshotUpload(event, 'g_register')">
+                    </td>
+                </tr>
+                <tr data-event="g_milestone">
+                    <td>
+                        g_milestone <span class="comment-icon" onclick="addComment(this)">💬</span>
+                    </td>
+                    <td>
+                        <span class="event-status passed" onclick="toggleEventStatus(this)">通过</span>
+                    </td>
+                    <td>
+                        <ul class="rules-list">
+                            <li class="rule-item">
+                                <span class="rule-status passed" onclick="toggleRuleStatus(this)"></span>
+                                <span class="rule-text">milestone 事件在正确时机触发</span>
+                                <span class="comment-icon" onclick="addComment(this)">💬</span>
+                            </li>
+                            <li class="rule-item">
+                                <span class="rule-status passed" onclick="toggleRuleStatus(this)"></span>
+                                <span class="rule-text">milestone 数据格式正确</span>
+                                <span class="comment-icon" onclick="addComment(this)">💬</span>
+                            </li>
+                        </ul>
+                    </td>
+                    <td class="screenshot-area">
+                        <div class="screenshot-placeholder" onclick="uploadScreenshot('g_milestone')">
+                            📷 添加截图
+                        </div>
+                        <input type="file" class="file-input" id="screenshot_g_milestone" accept="image/*" onchange="handleScreenshotUpload(event, 'g_milestone')">
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- 成功提示 -->
+    <div class="success-message" id="successMessage">保存成功！</div>
+    
+    <script>
+        let commentData = {};
+        
+        // 添加評論
+        function addComment(element) {
+            // 移除現有的評論氣泡
+            const existingBubble = document.querySelector('.comment-bubble');
+            if (existingBubble) {
+                existingBubble.remove();
+            }
+            
+            // 創建評論氣泡
+            const bubble = document.createElement('div');
+            bubble.className = 'comment-bubble';
+            bubble.innerHTML = `
+                <textarea placeholder="添加評論..."></textarea>
+                <div class="comment-actions">
+                    <button class="save-btn" onclick="saveComment(this)">保存</button>
+                    <button class="cancel-btn" onclick="cancelComment(this)">取消</button>
+                </div>
+            `;
+            
+            // 定位氣泡
+            const rect = element.getBoundingClientRect();
+            bubble.style.left = rect.right + 10 + 'px';
+            bubble.style.top = rect.top + 'px';
+            
+            // 添加到頁面
+            document.body.appendChild(bubble);
+            
+            // 聚焦到文本框
+            const textarea = bubble.querySelector('textarea');
+            textarea.focus();
+            
+            // 保存引用
+            bubble.dataset.element = element;
+            
+            // 載入現有評論
+            const commentKey = getCommentKey(element);
+            if (commentData[commentKey]) {
+                textarea.value = commentData[commentKey].text;
+            }
+        }
+        
+        // 保存評論
+        function saveComment(button) {
+            const bubble = button.closest('.comment-bubble');
+            const textarea = bubble.querySelector('textarea');
+            const element = bubble.dataset.element;
+            const commentKey = getCommentKey(element);
+            
+            if (textarea.value.trim()) {
+                commentData[commentKey] = {
+                    text: textarea.value.trim(),
+                    time: new Date().toLocaleString()
+                };
+                
+                // 顯示評論
+                showComment(element, commentData[commentKey]);
+                
+                // 保存到本地
+                saveCommentData();
+                
+                showSuccessMessage('評論已保存');
+            }
+            
+            bubble.remove();
+        }
+        
+        // 取消評論
+        function cancelComment(button) {
+            button.closest('.comment-bubble').remove();
+        }
+        
+        // 顯示評論
+        function showComment(element, comment) {
+            // 移除現有評論顯示
+            const existingDisplay = element.parentNode.querySelector('.comment-display');
+            if (existingDisplay) {
+                existingDisplay.remove();
+            }
+            
+            // 創建評論顯示
+            const display = document.createElement('div');
+            display.className = 'comment-display';
+            display.innerHTML = `
+                <div class="comment-header">
+                    <span class="comment-time">${comment.time}</span>
+                    <span class="comment-edit" onclick="editComment(this)">編輯</span>
+                </div>
+                <div class="comment-text">${comment.text}</div>
+            `;
+            
+            // 插入到元素後面
+            element.parentNode.insertBefore(display, element.nextSibling);
+        }
+        
+        // 編輯評論
+        function editComment(editElement) {
+            const display = editElement.closest('.comment-display');
+            const element = display.previousElementSibling;
+            addComment(element);
+        }
+        
+        // 獲取評論鍵值
+        function getCommentKey(element) {
+            const eventName = element.closest('tr')?.dataset.event || 'header';
+            const elementType = element.closest('td') ? 'event' : 
+                               element.closest('.rule-text') ? 'rule' : 'header';
+            const elementIndex = Array.from(element.parentNode.children).indexOf(element);
+            return `${eventName}_${elementType}_${elementIndex}`;
+        }
+        
+        // 切換事件狀態
+        function toggleEventStatus(element) {
+            const currentStatus = element.classList.contains('passed') ? 'passed' : 'failed';
+            const newStatus = currentStatus === 'passed' ? 'failed' : 'passed';
+            
+            element.classList.remove(currentStatus);
+            element.classList.add(newStatus);
+            element.textContent = newStatus === 'passed' ? '通过' : '失败';
+            
+            showSuccessMessage('状态已更新');
+        }
+        
+        // 切換規則狀態
+        function toggleRuleStatus(element) {
+            const currentStatus = element.classList.contains('passed') ? 'passed' : 'failed';
+            const newStatus = currentStatus === 'passed' ? 'failed' : 'passed';
+            
+            element.classList.remove(currentStatus);
+            element.classList.add(newStatus);
+            
+            showSuccessMessage('规则状态已更新');
+        }
+        
+        // 上傳截圖
+        function uploadScreenshot(eventName) {
+            document.getElementById(`screenshot_${eventName}`).click();
+        }
+        
+        // 處理截圖上傳
+        function handleScreenshotUpload(event, eventName) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const imageData = e.target.result;
+                    
+                    const screenshotArea = document.querySelector(`tr[data-event="${eventName}"] .screenshot-area`);
+                    screenshotArea.innerHTML = `
+                        <img src="${imageData}" class="screenshot-image" onclick="viewScreenshot('${imageData}')" alt="截图">
+                        <input type="file" class="file-input" id="screenshot_${eventName}" accept="image/*" onchange="handleScreenshotUpload(event, '${eventName}')">
+                    `;
+                    
+                    showSuccessMessage('截图上传成功');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+        
+        // 查看截圖
+        function viewScreenshot(imageData) {
+            const newWindow = window.open();
+            newWindow.document.write(`
+                <html>
+                    <head><title>截图查看</title></head>
+                    <body style="margin:0; padding:20px; background:#000; text-align:center;">
+                        <img src="${imageData}" style="max-width:100%; max-height:90vh; border-radius:8px;">
+                    </body>
+                </html>
+            `);
+        }
+        
+        // 顯示成功提示
+        function showSuccessMessage(message) {
+            const successMsg = document.getElementById('successMessage');
+            successMsg.textContent = message;
+            successMsg.classList.add('show');
+            
+            setTimeout(() => {
+                successMsg.classList.remove('show');
+            }, 2000);
+        }
+        
+        // 保存評論數據
+        function saveCommentData() {
+            localStorage.setItem('commentReportData', JSON.stringify(commentData));
+        }
+        
+        // 載入評論數據
+        function loadCommentData() {
+            const savedData = localStorage.getItem('commentReportData');
+            if (savedData) {
+                try {
+                    commentData = JSON.parse(savedData);
+                    // 顯示所有評論
+                    Object.keys(commentData).forEach(key => {
+                        const [eventName, elementType, elementIndex] = key.split('_');
+                        // 這裡可以根據需要恢復評論顯示
+                    });
+                } catch (e) {
+                    console.log('載入評論數據失敗');
+                }
+            }
+        }
+        
+        // 點擊外部關閉評論氣泡
+        document.addEventListener('click', function(event) {
+            if (!event.target.closest('.comment-bubble') && !event.target.closest('.comment-icon')) {
+                const bubble = document.querySelector('.comment-bubble');
+                if (bubble) {
+                    bubble.remove();
+                }
+            }
+        });
+        
+        // 頁面載入完成
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCommentData();
+            console.log('Comment編輯報告已加載完成！');
+        });
+    </script>
+</body>
+</html>
