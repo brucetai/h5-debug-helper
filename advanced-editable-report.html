@@ -1,0 +1,1170 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>H5 遊戲事件追踪報告 - 高級編輯版</title>
+    <style>
+        /* 專業報告樣式 - 與原檔案保持一致 */
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6; 
+            color: #333; 
+            margin: 0; 
+            padding: 0; 
+            background: #ffffff; 
+            color: #333333;
+        }
+        
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .edit-panel {
+            width: 0;
+            background: #ffffff;
+            border-left: 1px solid #e0e0e0;
+            transition: width 0.3s ease;
+            overflow: hidden;
+            position: relative;
+            box-shadow: -2px 0 10px rgba(0,0,0,0.1);
+        }
+        
+        .edit-panel.open {
+            width: 500px;
+        }
+        
+        /* 標題區域 */
+        .header {
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            color: #333333;
+            margin: 0 0 10px 0;
+            font-size: 24px;
+            font-weight: 600;
+        }
+        
+        .game-url {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+            border: 1px solid #e9ecef;
+        }
+        
+        .url-label {
+            color: #6c757d;
+            font-size: 14px;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        .url-value {
+            color: #333333;
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+            font-size: 14px;
+            word-break: break-all;
+            background: #ffffff;
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #dee2e6;
+        }
+        
+        .copy-btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+            font-size: 14px;
+            transition: background 0.3s;
+            font-weight: 500;
+        }
+        
+        .copy-btn:hover {
+            background: #0056b3;
+        }
+        
+        .generation-time {
+            color: #6c757d;
+            font-size: 14px;
+            margin: 15px 0;
+            font-weight: 500;
+        }
+        
+        /* 事件表格 */
+        .event-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .event-table th {
+            background: #f8f9fa;
+            color: #333333;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 1px solid #dee2e6;
+            font-size: 14px;
+        }
+        
+        .event-table td {
+            padding: 15px;
+            border-bottom: 1px solid #f1f3f4;
+            vertical-align: top;
+            font-size: 14px;
+        }
+        
+        .event-table tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .event-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        /* 事件狀態 */
+        .event-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .event-status.passed {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .event-status.failed {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        /* 規則列表 */
+        .rules-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .rule-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            margin-bottom: 8px;
+            padding: 8px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            border: 1px solid #e9ecef;
+        }
+        
+        .rule-status {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            margin-top: 4px;
+        }
+        
+        .rule-status.passed {
+            background: #28a745;
+        }
+        
+        .rule-status.failed {
+            background: #dc3545;
+        }
+        
+        .rule-text {
+            flex: 1;
+            font-size: 13px;
+            line-height: 1.4;
+            color: #333333;
+        }
+        
+        /* 截圖區域 */
+        .screenshot-area {
+            text-align: center;
+        }
+        
+        .screenshot-placeholder {
+            width: 120px;
+            height: 80px;
+            background: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6c757d;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .screenshot-placeholder:hover {
+            border-color: #007bff;
+            background: #e3f2fd;
+            color: #007bff;
+        }
+        
+        .screenshot-image {
+            max-width: 120px;
+            max-height: 80px;
+            border-radius: 6px;
+            cursor: pointer;
+            border: 1px solid #dee2e6;
+        }
+        
+        /* 編輯按鈕 */
+        .edit-btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+        
+        .edit-btn:hover {
+            background: #0056b3;
+            transform: translateY(-1px);
+        }
+        
+        /* 編輯面板內容 */
+        .edit-panel-content {
+            padding: 20px;
+            height: 100%;
+            overflow-y: auto;
+        }
+        
+        .edit-panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .edit-panel-title {
+            color: #333333;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            color: #6c757d;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s;
+        }
+        
+        .close-btn:hover {
+            background: #f8f9fa;
+            color: #333333;
+        }
+        
+        /* 編輯表單 */
+        .edit-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .form-label {
+            color: #333333;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .form-input {
+            background: #ffffff;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            color: #333333;
+            font-size: 14px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2);
+        }
+        
+        .form-select {
+            background: #ffffff;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            color: #333333;
+            font-size: 14px;
+            cursor: pointer;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        
+        .form-textarea {
+            background: #ffffff;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            color: #333333;
+            font-size: 14px;
+            min-height: 100px;
+            resize: vertical;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        
+        /* 規則編輯 */
+        .rules-editor {
+            background: #f8f9fa;
+            border-radius: 6px;
+            padding: 15px;
+            border: 1px solid #e9ecef;
+        }
+        
+        .rule-editor-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            padding: 10px;
+            background: #ffffff;
+            border-radius: 4px;
+            border: 1px solid #e9ecef;
+        }
+        
+        .rule-status-select {
+            background: #ffffff;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 4px 8px;
+            color: #333333;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        
+        .rule-text-input {
+            flex: 1;
+            background: #ffffff;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 8px;
+            color: #333333;
+            font-size: 13px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        
+        .delete-rule-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background 0.3s;
+        }
+        
+        .delete-rule-btn:hover {
+            background: #c82333;
+        }
+        
+        .add-rule-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            width: 100%;
+            margin-top: 10px;
+            transition: background 0.3s;
+            font-weight: 500;
+        }
+        
+        .add-rule-btn:hover {
+            background: #218838;
+        }
+        
+        /* 截圖管理 */
+        .screenshot-manager {
+            background: #f8f9fa;
+            border-radius: 6px;
+            padding: 15px;
+            border: 1px solid #e9ecef;
+        }
+        
+        .screenshot-upload {
+            border: 2px dashed #dee2e6;
+            border-radius: 6px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 15px;
+            background: #ffffff;
+        }
+        
+        .screenshot-upload:hover {
+            border-color: #007bff;
+            background: #e3f2fd;
+        }
+        
+        .upload-icon {
+            font-size: 32px;
+            color: #6c757d;
+            margin-bottom: 10px;
+        }
+        
+        .upload-text {
+            color: #6c757d;
+            font-size: 14px;
+        }
+        
+        .screenshot-preview {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        
+        .screenshot-preview img {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 6px;
+            border: 1px solid #dee2e6;
+        }
+        
+        .screenshot-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 10px;
+        }
+        
+        .screenshot-btn {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+            font-weight: 500;
+        }
+        
+        .screenshot-btn:hover {
+            background: #5a6268;
+        }
+        
+        .screenshot-btn.danger {
+            background: #dc3545;
+        }
+        
+        .screenshot-btn.danger:hover {
+            background: #c82333;
+        }
+        
+        /* 操作按鈕 */
+        .edit-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        .save-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            flex: 1;
+            transition: all 0.3s;
+        }
+        
+        .save-btn:hover {
+            background: #218838;
+            transform: translateY(-1px);
+        }
+        
+        .cancel-btn {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            flex: 1;
+            transition: all 0.3s;
+        }
+        
+        .cancel-btn:hover {
+            background: #5a6268;
+            transform: translateY(-1px);
+        }
+        
+        /* 響應式設計 */
+        @media (max-width: 1200px) {
+            .edit-panel.open {
+                width: 400px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            .edit-panel.open {
+                width: 100%;
+                height: 50vh;
+            }
+        }
+        
+        /* 動畫效果 */
+        .fade-in {
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        /* 隱藏文件輸入 */
+        .file-input {
+            display: none;
+        }
+        
+        /* 表格內容樣式調整 */
+        .event-table td:first-child {
+            font-weight: 600;
+            color: #333333;
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+        }
+        
+        /* 狀態標籤樣式 */
+        .event-status.passed::before {
+            content: "✅ ";
+        }
+        
+        .event-status.failed::before {
+            content: "❌ ";
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 主要內容區域 -->
+        <div class="main-content">
+            <!-- 標題區域 -->
+            <div class="header">
+                <h1>H5 遊戲事件追踪報告</h1>
+                <div class="game-url">
+                    <div class="url-label">游戏URL:</div>
+                    <div class="url-value">https://h5.stg.g123.jp/game/kumo</div>
+                    <button class="copy-btn" onclick="shareReport()">一鍵分享打點報告</button>
+                </div>
+                <div class="generation-time">生成时间: 2025/8/21 10:12:20</div>
+            </div>
+            
+            <!-- 事件追踪表格 -->
+            <table class="event-table">
+                <thead>
+                    <tr>
+                        <th>事件名称</th>
+                        <th>通过</th>
+                        <th>规则</th>
+                        <th>截图</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr data-event="g_init">
+                        <td>g_init</td>
+                        <td>
+                            <span class="event-status failed">失败</span>
+                        </td>
+                        <td>
+                            <ul class="rules-list">
+                                <li class="rule-item">
+                                    <span class="rule-status failed"></span>
+                                    <span class="rule-text">g_init需要遊戲最一開始上報</span>
+                                </li>
+                                <li class="rule-item">
+                                    <span class="rule-status passed"></span>
+                                    <span class="rule-text">g_init 事件后跟随g_register 事件,顺序正确</span>
+                                </li>
+                                <li class="rule-item">
+                                    <span class="rule-status passed"></span>
+                                    <span class="rule-text">g_init 事件在 p_game_loaded 事件之后,顺序正确</span>
+                                </li>
+                            </ul>
+                        </td>
+                        <td class="screenshot-area">
+                            <div class="screenshot-placeholder" onclick="openScreenshotUpload('g_init')">
+                                📷 添加截图
+                            </div>
+                        </td>
+                        <td>
+                            <button class="edit-btn" onclick="openEditPanel('g_init')">编辑</button>
+                        </td>
+                    </tr>
+                    <tr data-event="g_register">
+                        <td>g_register</td>
+                        <td>
+                            <span class="event-status passed">通过</span>
+                        </td>
+                        <td>
+                            <ul class="rules-list">
+                                <li class="rule-item">
+                                    <span class="rule-status passed"></span>
+                                    <span class="rule-text">schema 校验通过</span>
+                                </li>
+                                <li class="rule-item">
+                                    <span class="rule-status passed"></span>
+                                    <span class="rule-text">game_server_id 的值与其他事件一致</span>
+                                </li>
+                                <li class="rule-item">
+                                    <span class="rule-status passed"></span>
+                                    <span class="rule-text">role_id 的值与其他事件一致</span>
+                                </li>
+                                <li class="rule-item">
+                                    <span class="rule-status passed"></span>
+                                    <span class="rule-text">g_register 事件用户生涯仅一次</span>
+                                </li>
+                                <li class="rule-item">
+                                    <span class="rule-status passed"></span>
+                                    <span class="rule-text">g_register 事件与g_init 事件的时间间隔符合要求</span>
+                                </li>
+                            </ul>
+                        </td>
+                        <td class="screenshot-area">
+                            <div class="screenshot-placeholder" onclick="openScreenshotUpload('g_register')">
+                                📷 添加截图
+                            </div>
+                        </td>
+                        <td>
+                            <button class="edit-btn" onclick="openEditPanel('g_register')">编辑</button>
+                        </td>
+                    </tr>
+                    <tr data-event="g_milestone">
+                        <td>g_milestone</td>
+                        <td>
+                            <span class="event-status passed">通过</span>
+                        </td>
+                        <td>
+                            <ul class="rules-list">
+                                <li class="rule-item">
+                                    <span class="rule-status passed"></span>
+                                    <span class="rule-text">milestone 事件在正确时机触发</span>
+                                </li>
+                                <li class="rule-item">
+                                    <span class="rule-status passed"></span>
+                                    <span class="rule-text">milestone 数据格式正确</span>
+                                </li>
+                            </ul>
+                        </td>
+                        <td class="screenshot-area">
+                            <div class="screenshot-placeholder" onclick="openScreenshotUpload('g_milestone')">
+                                📷 添加截图
+                            </div>
+                        </td>
+                        <td>
+                            <button class="edit-btn" onclick="openEditPanel('g_milestone')">编辑</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- 編輯面板 -->
+        <div class="edit-panel" id="editPanel">
+            <div class="edit-panel-content">
+                <div class="edit-panel-header">
+                    <div class="edit-panel-title">编辑事件</div>
+                    <button class="close-btn" onclick="closeEditPanel()">×</button>
+                </div>
+                
+                <form class="edit-form" id="editForm">
+                    <div class="form-group">
+                        <label class="form-label">事件名称</label>
+                        <input type="text" class="form-input" id="eventName" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">通过状态</label>
+                        <select class="form-select" id="eventStatus">
+                            <option value="passed">✅ 通过</option>
+                            <option value="failed">❌ 失败</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">规则编辑</label>
+                        <div class="rules-editor" id="rulesEditor">
+                            <!-- 规则项会动态生成 -->
+                        </div>
+                        <button type="button" class="add-rule-btn" onclick="addRule()">+ 添加规则</button>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">截图管理</label>
+                        <div class="screenshot-manager">
+                            <div class="screenshot-upload" onclick="triggerFileUpload()">
+                                <div class="upload-icon">📷</div>
+                                <div class="upload-text">点击上传截图</div>
+                                <input type="file" class="file-input" id="screenshotUpload" accept="image/*" onchange="handleScreenshotUpload(event)">
+                            </div>
+                            <div class="screenshot-preview" id="screenshotPreview" style="display: none;">
+                                <img id="previewImage" src="" alt="截图预览">
+                                <div class="screenshot-actions">
+                                    <button type="button" class="screenshot-btn" onclick="viewScreenshot()">查看</button>
+                                    <button type="button" class="screenshot-btn danger" onclick="deleteScreenshot()">删除</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">补充说明</label>
+                        <textarea class="form-textarea" id="eventNotes" placeholder="在此添加详细说明..."></textarea>
+                    </div>
+                    
+                    <div class="edit-actions">
+                        <button type="button" class="save-btn" onclick="saveEvent()">保存</button>
+                        <button type="button" class="cancel-btn" onclick="closeEditPanel()">取消</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let currentEvent = null;
+        let eventData = {
+            'g_init': {
+                name: 'g_init',
+                status: 'failed',
+                rules: [
+                    { status: 'failed', text: 'g_init需要遊戲最一開始上報' },
+                    { status: 'passed', text: 'g_init 事件后跟随g_register 事件,顺序正确' },
+                    { status: 'passed', text: 'g_init 事件在 p_game_loaded 事件之后,顺序正确' }
+                ],
+                screenshot: null,
+                notes: ''
+            },
+            'g_register': {
+                name: 'g_register',
+                status: 'passed',
+                rules: [
+                    { status: 'passed', text: 'schema 校验通过' },
+                    { status: 'passed', text: 'game_server_id 的值与其他事件一致' },
+                    { status: 'passed', text: 'role_id 的值与其他事件一致' },
+                    { status: 'passed', text: 'g_register 事件用户生涯仅一次' },
+                    { status: 'passed', text: 'g_register 事件与g_init 事件的时间间隔符合要求' }
+                ],
+                screenshot: null,
+                notes: ''
+            },
+            'g_milestone': {
+                name: 'g_milestone',
+                status: 'passed',
+                rules: [
+                    { status: 'passed', text: 'milestone 事件在正确时机触发' },
+                    { status: 'passed', text: 'milestone 数据格式正确' }
+                ],
+                screenshot: null,
+                notes: ''
+            }
+        };
+        
+        // 打開編輯面板
+        function openEditPanel(eventName) {
+            currentEvent = eventName;
+            const panel = document.getElementById('editPanel');
+            const event = eventData[eventName];
+            
+            // 填充表單數據
+            document.getElementById('eventName').value = event.name;
+            document.getElementById('eventStatus').value = event.status;
+            document.getElementById('eventNotes').value = event.notes || '';
+            
+            // 生成規則編輯器
+            generateRulesEditor(event.rules);
+            
+            // 顯示截圖預覽
+            if (event.screenshot) {
+                showScreenshotPreview(event.screenshot);
+            } else {
+                hideScreenshotPreview();
+            }
+            
+            // 打開面板
+            panel.classList.add('open');
+            panel.classList.add('fade-in');
+            
+            // 聚焦到第一個輸入框
+            setTimeout(() => {
+                document.getElementById('eventStatus').focus();
+            }, 300);
+        }
+        
+        // 關閉編輯面板
+        function closeEditPanel() {
+            const panel = document.getElementById('editPanel');
+            panel.classList.remove('open');
+            panel.classList.remove('fade-in');
+            currentEvent = null;
+        }
+        
+        // 生成規則編輯器
+        function generateRulesEditor(rules) {
+            const container = document.getElementById('rulesEditor');
+            container.innerHTML = '';
+            
+            rules.forEach((rule, index) => {
+                const ruleElement = createRuleElement(rule, index);
+                container.appendChild(ruleElement);
+            });
+        }
+        
+        // 創建規則元素
+        function createRuleElement(rule, index) {
+            const div = document.createElement('div');
+            div.className = 'rule-editor-item';
+            div.innerHTML = `
+                <select class="rule-status-select" onchange="updateRuleStatus(${index}, this.value)">
+                    <option value="passed" ${rule.status === 'passed' ? 'selected' : ''}>✅</option>
+                    <option value="failed" ${rule.status === 'failed' ? 'selected' : ''}>❌</option>
+                </select>
+                <input type="text" class="rule-text-input" value="${rule.text}" onchange="updateRuleText(${index}, this.value)">
+                <button type="button" class="delete-rule-btn" onclick="deleteRule(${index})">×</button>
+            `;
+            return div;
+        }
+        
+        // 添加規則
+        function addRule() {
+            const container = document.getElementById('rulesEditor');
+            const index = container.children.length;
+            const newRule = { status: 'passed', text: '新规则' };
+            
+            eventData[currentEvent].rules.push(newRule);
+            const ruleElement = createRuleElement(newRule, index);
+            container.appendChild(ruleElement);
+        }
+        
+        // 更新規則狀態
+        function updateRuleStatus(index, status) {
+            eventData[currentEvent].rules[index].status = status;
+        }
+        
+        // 更新規則文本
+        function updateRuleText(index, text) {
+            eventData[currentEvent].rules[index].text = text;
+        }
+        
+        // 刪除規則
+        function deleteRule(index) {
+            if (confirm('確定要刪除這個規則嗎？')) {
+                eventData[currentEvent].rules.splice(index, 1);
+                generateRulesEditor(eventData[currentEvent].rules);
+            }
+        }
+        
+        // 觸發文件上傳
+        function triggerFileUpload() {
+            document.getElementById('screenshotUpload').click();
+        }
+        
+        // 處理截圖上傳
+        function handleScreenshotUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const imageData = e.target.result;
+                    eventData[currentEvent].screenshot = imageData;
+                    showScreenshotPreview(imageData);
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+        
+        // 顯示截圖預覽
+        function showScreenshotPreview(imageData) {
+            document.getElementById('previewImage').src = imageData;
+            document.getElementById('screenshotPreview').style.display = 'block';
+            document.querySelector('.screenshot-upload').style.display = 'none';
+        }
+        
+        // 隱藏截圖預覽
+        function hideScreenshotPreview() {
+            document.getElementById('screenshotPreview').style.display = 'none';
+            document.querySelector('.screenshot-upload').style.display = 'block';
+        }
+        
+        // 查看截圖
+        function viewScreenshot() {
+            const imageData = eventData[currentEvent].screenshot;
+            if (imageData) {
+                const newWindow = window.open();
+                newWindow.document.write(`
+                    <html>
+                        <head><title>截图查看</title></head>
+                        <body style="margin:0; padding:20px; background:#000; text-align:center;">
+                            <img src="${imageData}" style="max-width:100%; max-height:90vh; border-radius:8px;">
+                        </body>
+                    </html>
+                `);
+            }
+        }
+        
+        // 刪除截圖
+        function deleteScreenshot() {
+            if (confirm('確定要刪除這個截圖嗎？')) {
+                eventData[currentEvent].screenshot = null;
+                hideScreenshotPreview();
+            }
+        }
+        
+        // 保存事件
+        function saveEvent() {
+            if (!currentEvent) return;
+            
+            // 更新事件數據
+            eventData[currentEvent].status = document.getElementById('eventStatus').value;
+            eventData[currentEvent].notes = document.getElementById('eventNotes').value;
+            
+            // 更新表格顯示
+            updateTableDisplay(currentEvent);
+            
+            // 關閉面板
+            closeEditPanel();
+            
+            // 顯示成功消息
+            alert('事件保存成功！');
+        }
+        
+        // 更新表格顯示
+        function updateTableDisplay(eventName) {
+            const event = eventData[eventName];
+            const row = document.querySelector(`tr[data-event="${eventName}"]`);
+            
+            if (row) {
+                // 更新狀態
+                const statusCell = row.querySelector('.event-status');
+                statusCell.className = `event-status ${event.status}`;
+                statusCell.textContent = event.status === 'passed' ? '通过' : '失败';
+                
+                // 更新規則
+                const rulesCell = row.querySelector('.rules-list');
+                rulesCell.innerHTML = '';
+                event.rules.forEach(rule => {
+                    const li = document.createElement('li');
+                    li.className = 'rule-item';
+                    li.innerHTML = `
+                        <span class="rule-status ${rule.status}"></span>
+                        <span class="rule-text">${rule.text}</span>
+                    `;
+                    rulesCell.appendChild(li);
+                });
+                
+                // 更新截圖
+                const screenshotCell = row.querySelector('.screenshot-area');
+                if (event.screenshot) {
+                    screenshotCell.innerHTML = `
+                        <img src="${event.screenshot}" class="screenshot-image" onclick="viewScreenshot('${eventName}')" alt="截图">
+                    `;
+                } else {
+                    screenshotCell.innerHTML = `
+                        <div class="screenshot-placeholder" onclick="openScreenshotUpload('${eventName}')">
+                            📷 添加截图
+                        </div>
+                    `;
+                }
+            }
+        }
+        
+        // 打開截圖上傳（從表格點擊）
+        function openScreenshotUpload(eventName) {
+            openEditPanel(eventName);
+            // 自動觸發截圖上傳
+            setTimeout(() => {
+                triggerFileUpload();
+            }, 350);
+        }
+        
+        // 一鍵分享打點報告
+        function shareReport() {
+            // 生成完整的報告HTML
+            const reportHTML = generateFullReport();
+            
+            // 創建Blob對象
+            const blob = new Blob([reportHTML], { type: 'text/html' });
+            
+            // 創建下載鏈接
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `打點報告_${new Date().toISOString().slice(0, 10)}.html`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            alert('打點報告已生成並下載！');
+        }
+        
+        // 生成完整報告HTML
+        function generateFullReport() {
+            const title = document.querySelector('.header h1').textContent;
+            const gameUrl = document.querySelector('.url-value').textContent;
+            const generationTime = document.querySelector('.generation-time').textContent;
+            const table = document.querySelector('.event-table');
+            
+            return `<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${title}</title>
+    <style>
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6; 
+            color: #333; 
+            margin: 0; 
+            padding: 20px; 
+            background: #ffffff; 
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+        .header { background: #ffffff; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #e0e0e0; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .header h1 { color: #333333; margin: 0 0 10px 0; font-size: 24px; font-weight: 600; }
+        .game-url { background: #f8f9fa; padding: 15px; border-radius: 6px; margin: 15px 0; border: 1px solid #e9ecef; }
+        .url-label { color: #6c757d; font-size: 14px; margin-bottom: 8px; font-weight: 500; }
+        .url-value { color: #333333; font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace; font-size: 14px; word-break: break-all; background: #ffffff; padding: 8px; border-radius: 4px; border: 1px solid #dee2e6; }
+        .generation-time { color: #6c757d; font-size: 14px; margin: 15px 0; font-weight: 500; }
+        .event-table { width: 100%; border-collapse: collapse; background: #ffffff; border-radius: 8px; overflow: hidden; border: 1px solid #e0e0e0; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .event-table th { background: #f8f9fa; color: #333333; padding: 15px; text-align: left; font-weight: 600; border-bottom: 1px solid #dee2e6; font-size: 14px; }
+        .event-table td { padding: 15px; border-bottom: 1px solid #f1f3f4; vertical-align: top; font-size: 14px; }
+        .event-status { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; text-transform: uppercase; }
+        .event-status.passed { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .event-status.failed { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .event-status.passed::before { content: "✅ "; }
+        .event-status.failed::before { content: "❌ "; }
+        .rules-list { list-style: none; padding: 0; margin: 0; }
+        .rule-item { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 8px; padding: 8px; background: #f8f9fa; border-radius: 4px; border: 1px solid #e9ecef; }
+        .rule-status { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
+        .rule-status.passed { background: #28a745; }
+        .rule-status.failed { background: #dc3545; }
+        .rule-text { flex: 1; font-size: 13px; line-height: 1.4; color: #333333; }
+        .screenshot-image { max-width: 120px; max-height: 80px; border-radius: 6px; border: 1px solid #dee2e6; }
+        .comment-display { background: #e3f2fd; border: 1px solid #2196f3; border-radius: 6px; padding: 12px; margin-top: 8px; font-size: 13px; color: #1976d2; }
+        .comment-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+        .comment-time { font-size: 11px; color: #6c757d; }
+        .comment-text { margin-top: 4px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>${title}</h1>
+            <div class="game-url">
+                <div class="url-label">游戏URL:</div>
+                <div class="url-value">${gameUrl}</div>
+            </div>
+            <div class="generation-time">${generationTime}</div>
+        </div>
+        ${table.outerHTML}
+    </div>
+</body>
+</html>`;
+        }
+        
+        // 鍵盤快捷鍵
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeEditPanel();
+            }
+        });
+        
+        // 點擊外部關閉面板
+        document.addEventListener('click', function(event) {
+            const panel = document.getElementById('editPanel');
+            const isClickInside = panel.contains(event.target);
+            const isEditButton = event.target.classList.contains('edit-btn');
+            
+            if (panel.classList.contains('open') && !isClickInside && !isEditButton) {
+                closeEditPanel();
+            }
+        });
+        
+        // 頁面加載完成後的初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('H5 遊戲事件追踪報告編輯器已加載完成！');
+            console.log('💡 使用提示：');
+            console.log('• 點擊「編輯」按鈕打開編輯面板');
+            console.log('• 支持修改事件狀態、規則、截圖和說明');
+            console.log('• 使用 ESC 鍵快速關閉編輯面板');
+            console.log('• 點擊截圖區域可直接上傳新截圖');
+        });
+    </script>
+</body>
+</html>
