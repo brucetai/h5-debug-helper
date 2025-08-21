@@ -569,6 +569,11 @@
                 existingBubble.remove();
             }
             
+            // 為元素添加唯一ID（如果還沒有的話）
+            if (!element.dataset.commentId) {
+                element.dataset.commentId = 'comment_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            }
+            
             // 創建評論氣泡
             const bubble = document.createElement('div');
             bubble.className = 'comment-bubble';
@@ -604,8 +609,8 @@
             const textarea = bubble.querySelector('textarea');
             textarea.focus();
             
-            // 保存引用
-            bubble.dataset.element = element;
+            // 保存元素ID引用
+            bubble.dataset.elementId = element.dataset.commentId;
             
             // 載入現有評論
             const commentKey = getCommentKey(element);
@@ -619,8 +624,26 @@
             console.log('saveComment called', button);
             
             const bubble = button.closest('.comment-bubble');
+            if (!bubble) {
+                console.error('No comment bubble found');
+                return;
+            }
+            
             const textarea = bubble.querySelector('textarea');
-            const element = bubble.dataset.element;
+            if (!textarea) {
+                console.error('No textarea found');
+                return;
+            }
+            
+            // 從dataset中獲取元素引用
+            const elementId = bubble.dataset.elementId;
+            const element = document.querySelector(`[data-comment-id="${elementId}"]`);
+            
+            if (!element) {
+                console.error('Original element not found');
+                return;
+            }
+            
             const commentKey = getCommentKey(element);
             
             console.log('Bubble:', bubble);
@@ -723,6 +746,12 @@
         // 獲取評論鍵值
         function getCommentKey(element) {
             console.log('getCommentKey called with element:', element);
+            
+            // 檢查element是否為有效的DOM元素
+            if (!element || typeof element.closest !== 'function') {
+                console.error('Invalid element passed to getCommentKey:', element);
+                return 'error_key';
+            }
             
             // 找到最近的tr元素
             const tr = element.closest('tr');
