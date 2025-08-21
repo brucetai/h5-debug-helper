@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>評論功能測試</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .test-item {
+            background: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+        
+        .comment-icon {
+            cursor: pointer;
+            font-size: 20px;
+            margin-left: 10px;
+            color: #007bff;
+        }
+        
+        .comment-bubble {
+            position: absolute;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 1000;
+            min-width: 300px;
+        }
+        
+        .comment-bubble textarea {
+            width: 100%;
+            min-height: 80px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 8px;
+            margin-bottom: 10px;
+        }
+        
+        .comment-bubble button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 8px;
+        }
+        
+        .save-btn {
+            background: #007bff;
+            color: white;
+        }
+        
+        .cancel-btn {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .comment-display {
+            background: #e3f2fd;
+            border: 1px solid #2196f3;
+            border-radius: 6px;
+            padding: 10px;
+            margin-top: 10px;
+            color: #1976d2;
+        }
+    </style>
+</head>
+<body>
+    <h1>評論功能測試</h1>
+    
+    <div class="test-item">
+        測試項目 1 <span class="comment-icon">💬</span>
+    </div>
+    
+    <div class="test-item">
+        測試項目 2 <span class="comment-icon">💬</span>
+    </div>
+    
+    <div class="test-item">
+        測試項目 3 <span class="comment-icon">💬</span>
+    </div>
+    
+    <script>
+        let commentData = {};
+        
+        // 添加評論
+        function addComment(element) {
+            console.log('addComment called', element);
+            
+            // 移除現有的評論氣泡
+            const existingBubble = document.querySelector('.comment-bubble');
+            if (existingBubble) {
+                existingBubble.remove();
+            }
+            
+            // 創建評論氣泡
+            const bubble = document.createElement('div');
+            bubble.className = 'comment-bubble';
+            bubble.innerHTML = `
+                <textarea placeholder="添加評論..."></textarea>
+                <button class="save-btn">保存</button>
+                <button class="cancel-btn">取消</button>
+            `;
+            
+            // 定位氣泡
+            const rect = element.getBoundingClientRect();
+            bubble.style.left = rect.right + 10 + 'px';
+            bubble.style.top = rect.top + 'px';
+            
+            // 添加到頁面
+            document.body.appendChild(bubble);
+            
+            // 聚焦到文本框
+            const textarea = bubble.querySelector('textarea');
+            textarea.focus();
+            
+            // 保存引用
+            bubble.dataset.element = element;
+            
+            // 添加事件監聽器
+            const saveBtn = bubble.querySelector('.save-btn');
+            const cancelBtn = bubble.querySelector('.cancel-btn');
+            
+            saveBtn.addEventListener('click', function() {
+                saveComment(this);
+            });
+            
+            cancelBtn.addEventListener('click', function() {
+                cancelComment(this);
+            });
+        }
+        
+        // 保存評論
+        function saveComment(button) {
+            const bubble = button.closest('.comment-bubble');
+            const textarea = bubble.querySelector('textarea');
+            const element = bubble.dataset.element;
+            
+            if (textarea.value.trim()) {
+                const comment = {
+                    text: textarea.value.trim(),
+                    time: new Date().toLocaleString()
+                };
+                
+                // 顯示評論
+                showComment(element, comment);
+                
+                // 保存到本地
+                const key = element.textContent.trim();
+                commentData[key] = comment;
+                localStorage.setItem('testCommentData', JSON.stringify(commentData));
+                
+                alert('評論已保存！');
+            }
+            
+            bubble.remove();
+        }
+        
+        // 取消評論
+        function cancelComment(button) {
+            button.closest('.comment-bubble').remove();
+        }
+        
+        // 顯示評論
+        function showComment(element, comment) {
+            // 移除現有評論顯示
+            const existingDisplay = element.parentNode.querySelector('.comment-display');
+            if (existingDisplay) {
+                existingDisplay.remove();
+            }
+            
+            // 創建評論顯示
+            const display = document.createElement('div');
+            display.className = 'comment-display';
+            display.innerHTML = `
+                <div><strong>時間：</strong>${comment.time}</div>
+                <div><strong>評論：</strong>${comment.text}</div>
+            `;
+            
+            // 插入到元素後面
+            element.parentNode.insertBefore(display, element.nextSibling);
+        }
+        
+        // 頁面載入完成
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded');
+            
+            // 載入已保存的評論
+            const savedData = localStorage.getItem('testCommentData');
+            if (savedData) {
+                try {
+                    commentData = JSON.parse(savedData);
+                    console.log('Loaded comment data:', commentData);
+                } catch (e) {
+                    console.log('Failed to load comment data');
+                }
+            }
+            
+            // 為所有評論圖標添加點擊事件
+            document.querySelectorAll('.comment-icon').forEach(icon => {
+                console.log('Adding click listener to icon:', icon);
+                icon.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('Icon clicked:', this);
+                    addComment(this);
+                });
+            });
+            
+            console.log('Event listeners added');
+        });
+    </script>
+</body>
+</html>
